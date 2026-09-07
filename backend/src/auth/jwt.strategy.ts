@@ -17,12 +17,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException();
     }
     // passport automatically attaches this return value to req.user
-    return { 
-      id: payload.sub, 
-      email: payload.email, 
-      role: payload.role, 
+    return {
+      id: payload.sub,
+      email: payload.email,
+      role: payload.role,
       divisi: payload.divisi,
-      levelAkses: payload.levelAkses 
+      levelAkses: payload.levelAkses,
     };
   }
 }

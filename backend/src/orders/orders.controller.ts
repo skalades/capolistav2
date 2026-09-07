@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Body, UseGuards, Request, Param, Patch, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  Request,
+  Param,
+  Patch,
+  Delete,
+} from '@nestjs/common';
 import { OrdersService } from './orders.service.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import { UpdateOrderDto } from './dto/update-order.dto.js';
@@ -16,7 +26,7 @@ export class OrdersController {
   // @Roles(Role.SUPERADMIN, Role.OWNER, Role.ADMIN, Role.PEMASARAN)
   async create(@Body() createOrderDto: CreateOrderDto, @Request() req: any) {
     // Simulasi user ID untuk saat ini karena Auth belum sepenuhnya jadi
-    const userId = req.user?.id || 1; 
+    const userId = req.user?.id || 1;
     return await this.ordersService.createOrder(createOrderDto, userId);
   }
 
@@ -30,7 +40,10 @@ export class OrdersController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+  ) {
     return await this.ordersService.update(+id, updateOrderDto);
   }
 

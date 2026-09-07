@@ -31,7 +31,9 @@ export class OrdersService {
       // 1. Cari atau Buat Customer berdasarkan kontak/nama
       let customer;
       if (kontakCustomer) {
-        customer = await tx.customer.findFirst({ where: { kontak: kontakCustomer } });
+        customer = await tx.customer.findFirst({
+          where: { kontak: kontakCustomer },
+        });
       }
       if (!customer) {
         customer = await tx.customer.create({
@@ -46,7 +48,7 @@ export class OrdersService {
       // 2. Generate Nomor Order otomatis (ORD-YYYYMMDD-XXXX)
       const today = new Date();
       const dateString = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
-      
+
       const countToday = await tx.order.count({
         where: {
           noOrder: {
@@ -97,9 +99,11 @@ export class OrdersService {
       id: order.id,
       noOrder: order.noOrder,
       customerName: order.customer.nama,
-      statusPembayaran: order.sisaBayar <= 0 ? 'Lunas' : (order.dp > 0 ? 'DP' : 'Belum Bayar'),
+      statusPembayaran:
+        order.sisaBayar <= 0 ? 'Lunas' : order.dp > 0 ? 'DP' : 'Belum Bayar',
       // tag pembayaran untuk dicocokkan dengan Design System (Teal, Gold, Danger)
-      statusColor: order.sisaBayar <= 0 ? 'Teal' : (order.dp > 0 ? 'Gold' : 'Red'),
+      statusColor:
+        order.sisaBayar <= 0 ? 'Teal' : order.dp > 0 ? 'Gold' : 'Red',
       statusProduksi: order.status,
       deadline: order.deadline,
     }));
@@ -121,10 +125,10 @@ export class OrdersService {
 
   async update(id: number, updateOrderDto: any) {
     const order = await this.findOne(id);
-    
+
     // Simplification for updating order
     const { items, ...orderData } = updateOrderDto;
-    
+
     return await this.prisma.order.update({
       where: { id },
       data: {
@@ -134,7 +138,7 @@ export class OrdersService {
       include: {
         customer: true,
         items: true,
-      }
+      },
     });
   }
 

@@ -13,7 +13,7 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
-    
+
     // Find user by email
     const user = await this.prisma.user.findUnique({
       where: { email },
@@ -30,7 +30,7 @@ export class AuthService {
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    
+
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -41,7 +41,7 @@ export class AuthService {
 
     // Return token and user info without password
     const { password: _, ...userInfo } = user;
-    
+
     return {
       access_token,
       user: userInfo,

@@ -10,6 +10,7 @@ export interface KanbanCardType {
   orderId: string
   customer: string
   product: string
+  stage: string
   deadline?: string
   metadata?: Record<string, string>
 }
@@ -76,10 +77,31 @@ export function KanbanCard({ data, isActive, className, ...props }: KanbanCardPr
   )
 }
 
-export function KanbanBoard({ children }: { children: React.ReactNode }) {
+export interface KanbanBoardProps {
+  stages: string[];
+  orders: KanbanCardType[];
+  activeCardId?: string;
+  onCardClick?: (card: KanbanCardType) => void;
+}
+
+export function KanbanBoard({ stages, orders, activeCardId, onCardClick }: KanbanBoardProps) {
   return (
     <div className="flex gap-4 h-full overflow-x-auto pb-4 custom-scrollbar items-start">
-      {children}
+      {stages.map(stage => {
+        const stageOrders = orders.filter(o => o.stage === stage);
+        return (
+          <KanbanColumn key={stage} title={stage} count={stageOrders.length}>
+            {stageOrders.map(order => (
+              <KanbanCard 
+                key={order.id} 
+                data={order} 
+                isActive={activeCardId === order.id}
+                onClick={() => onCardClick?.(order)}
+              />
+            ))}
+          </KanbanColumn>
+        )
+      })}
     </div>
   )
 }

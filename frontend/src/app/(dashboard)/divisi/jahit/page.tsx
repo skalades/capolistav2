@@ -7,16 +7,15 @@ import { Button } from "@/components/ui/Button"
 import { CheckSquare, Send, User, X } from "lucide-react"
 
 // Dummy data
-const IN_QUEUE: KanbanCardType[] = [
-  { id: "1", orderId: "ORD-041", customer: "Tim Futsal Galaxy", product: "Jersey Sublim (S-XL) - 24 pcs", deadline: "Besok", metadata: { Pola: "Reguler", Penjahit: "Ahmad" } },
-  { id: "2", orderId: "ORD-042", customer: "PT Karya Abadi", product: "Kemeja Seragam - 50 pcs", metadata: { Pola: "Custom", Penjahit: "Belum assign" } },
+const ALL_ORDERS: KanbanCardType[] = [
+  { id: "1", orderId: "ORD-041", customer: "Tim Futsal Galaxy", product: "Jersey Sublim (S-XL) - 24 pcs", stage: "Menunggu", deadline: "Besok", metadata: { Pola: "Reguler", Penjahit: "Ahmad" } },
+  { id: "2", orderId: "ORD-042", customer: "PT Karya Abadi", product: "Kemeja Seragam - 50 pcs", stage: "Menunggu", metadata: { Pola: "Custom", Penjahit: "Belum assign" } },
+  { id: "3", orderId: "ORD-039", customer: "SDN 01 Pagi", product: "Seragam Olahraga - 120 pcs", stage: "Sedang Dijahit", deadline: "3 Hari lagi", metadata: { Penjahit: "Rina & Budi", Progress: "45%" } },
+  { id: "4", orderId: "ORD-035", customer: "Komunitas VESPA", product: "Jaket Windbreaker - 15 pcs", stage: "QC", metadata: { Penjahit: "Ahmad" } },
+  { id: "5", orderId: "ORD-030", customer: "BEM UI", product: "PDH - 80 pcs", stage: "Selesai", metadata: { Penjahit: "Rina" } },
 ]
-const IN_PROGRESS: KanbanCardType[] = [
-  { id: "3", orderId: "ORD-039", customer: "SDN 01 Pagi", product: "Seragam Olahraga - 120 pcs", deadline: "3 Hari lagi", metadata: { Penjahit: "Rina & Budi", Progress: "45%" } },
-]
-const QC: KanbanCardType[] = [
-  { id: "4", orderId: "ORD-035", customer: "Komunitas VESPA", product: "Jaket Windbreaker - 15 pcs", metadata: { Penjahit: "Ahmad" } },
-]
+
+const STAGES = ["Menunggu", "Sedang Dijahit", "QC", "Selesai"]
 
 export default function JahitPage() {
   const [activeCard, setActiveCard] = React.useState<KanbanCardType | null>(null)
@@ -31,40 +30,12 @@ export default function JahitPage() {
       <div className="flex-1 flex overflow-hidden">
         {/* Kanban Area */}
         <div className="flex-1 overflow-hidden p-6">
-          <KanbanBoard>
-            <KanbanColumn title="ANTREAN JAHIT" count={IN_QUEUE.length}>
-              {IN_QUEUE.map(card => (
-                <KanbanCard 
-                  key={card.id} 
-                  data={card} 
-                  isActive={activeCard?.id === card.id}
-                  onClick={() => setActiveCard(card)}
-                />
-              ))}
-            </KanbanColumn>
-            
-            <KanbanColumn title="SEDANG DIJAHIT" count={IN_PROGRESS.length}>
-              {IN_PROGRESS.map(card => (
-                <KanbanCard 
-                  key={card.id} 
-                  data={card} 
-                  isActive={activeCard?.id === card.id}
-                  onClick={() => setActiveCard(card)}
-                />
-              ))}
-            </KanbanColumn>
-
-            <KanbanColumn title="QC JAHITAN" count={QC.length}>
-              {QC.map(card => (
-                <KanbanCard 
-                  key={card.id} 
-                  data={card} 
-                  isActive={activeCard?.id === card.id}
-                  onClick={() => setActiveCard(card)}
-                />
-              ))}
-            </KanbanColumn>
-          </KanbanBoard>
+          <KanbanBoard 
+            stages={STAGES} 
+            orders={ALL_ORDERS} 
+            activeCardId={activeCard?.id} 
+            onCardClick={setActiveCard} 
+          />
         </div>
 
         {/* Right Detail Panel */}

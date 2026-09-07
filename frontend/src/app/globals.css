@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #F3EFE6;
+  --panel: #FBF9F4;
+  --ink: #211D1A;
+  --ink-soft: #6B655C;
+  --line: #DCD3BF;
+  --navy: #29394A;
+  --accent: #2F6F62;
+  --gold: #C9962B;
+  --danger: #A8402F;
+  --purple: #8A6A9E;
+
+  --background: var(--bg);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
+  --color-capo-bg: var(--bg);
+  --color-capo-panel: var(--panel);
+  --color-capo-ink: var(--ink);
+  --color-capo-ink-soft: var(--ink-soft);
+  --color-capo-line: var(--line);
+  --color-capo-navy: var(--navy);
+  --color-capo-accent: var(--accent);
+  --color-capo-gold: var(--gold);
+  --color-capo-danger: var(--danger);
+  --color-capo-purple: var(--purple);
+
+  --font-oswald: 'Oswald', sans-serif;
+  --font-sans: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  --radius-panel: 4px;
+  --radius-badge: 20px;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}

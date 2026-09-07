@@ -1,0 +1,1 @@
+import { PrismaClient } from '@prisma/client'; const prisma = new PrismaClient(); async function main() { const op = await prisma.user.create({ data: { nama: 'Rina (Penjahit)', email: 'rina@capolista.com', password: '123', role: 'STAF', divisi: 'JAHIT', tipeGaji: 'BORONGAN', statusAktif: true } }); console.log(op.id); } main();

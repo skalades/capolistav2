@@ -1,0 +1,474 @@
+# PRODUCT REQUIREMENTS DOCUMENT (PRD)
+# Sistem Manajemen Konveksi Multi-Level Berbasis Divisi
+## CAPOLISTA APPAREL
+
+**Versi Dokumen:** 2.0
+**Tanggal:** 04 September 2026
+**Status:** Draft Revisi
+**Disusun untuk:** Capolista Apparel (UMKM Konveksi CMT — Cut, Make & Trim)
+
+---
+
+## 1. RINGKASAN EKSEKUTIF
+
+Capolista Apparel adalah usaha konveksi yang memproduksi pakaian secara mandiri (kaus, baju, celana) dengan model produksi **Cut, Make & Trim (CMT)** — mulai dari pemotongan kain hingga finishing produk jadi. Sistem manajemen internal yang dibutuhkan harus mampu mengelola alur kerja produksi secara terstruktur, mulai dari order masuk, desain & pola, pemotongan kain (cutting), penjahitan, printing/sablon, pemasangan/finishing, hingga quality control, packing, dan pengiriman ke customer.
+
+Sistem ini dirancang dengan pendekatan **multi-level akses berdasarkan divisi**, sehingga setiap divisi hanya melihat dan mengerjakan tugas sesuai tanggung jawabnya. Selain itu, sistem juga mengakomodasi **manajemen operator produksi (penjahit & pemotong)** dengan sistem penggajian campur: **borongan (per pcs), harian, dan bulanan** — termasuk tarif borongan yang fleksibel per operator per order/proyek berdasarkan tingkat kesulitan pekerjaan.
+
+---
+
+## 2. LATAR BELAKANG & MASALAH
+
+### 2.1 Kondisi Saat Ini
+- Proses order, desain, cutting, jahit, printing, dan pemasangan masih dikoordinasikan secara manual (grup chat, catatan kertas, atau spreadsheet terpisah).
+- Tidak ada sistem terpusat untuk melacak status order secara real-time.
+- Owner kesulitan memantau progres produksi tanpa harus bertanya langsung ke tiap divisi.
+- Rawan terjadi kesalahan data (ukuran, jumlah, desain) karena berpindah tangan antar divisi tanpa dokumentasi digital.
+- Sulit menghitung kapasitas produksi, beban kerja tiap divisi, dan performa per operator.
+- Perhitungan upah borongan operator jahit/cutting dilakukan manual dan rawan selisih.
+- Tidak ada sistem approval output harian operator — angka pcs yang diklaim operator tidak terverifikasi secara sistematis.
+
+### 2.2 Masalah yang Ingin Diselesaikan
+1. Tidak ada standar alur kerja digital antar divisi (Desain → Cutting → Jahit → Printing → Pemasangan → QC → Packing).
+2. Tidak ada sistem approval/hand-off yang jelas antar divisi.
+3. Owner/manajemen tidak punya dashboard untuk melihat status seluruh order secara real-time.
+4. Data pelanggan, order, dan riwayat produksi tidak terpusat.
+5. Tidak ada pelacakan kinerja per divisi/karyawan/operator.
+6. Perhitungan upah borongan tidak akurat karena tidak ada sistem tracking output harian per operator.
+7. Tarif borongan yang berbeda per operator dan per order/proyek tidak terdokumentasi dengan baik.
+
+---
+
+## 3. TUJUAN PRODUK (GOALS)
+
+1. Menyediakan satu sistem terpusat untuk mengelola seluruh alur produksi CMT dari order hingga selesai.
+2. Memberikan akses berjenjang (multi-level) sesuai peran/divisi sehingga setiap pengguna hanya melihat data yang relevan.
+3. Memberikan visibilitas penuh kepada Owner/Admin atas seluruh proses dan performa bisnis.
+4. Mempercepat proses hand-off antar divisi dengan notifikasi otomatis.
+5. Menyediakan sistem tracking output harian operator dengan mekanisme self-report + approval mandor.
+6. Mengotomatisasi perhitungan upah borongan berdasarkan output yang telah disetujui, dengan tarif fleksibel per operator per order.
+7. Menyediakan riwayat dan laporan (produksi, keuangan dasar, kinerja divisi, penggajian) untuk pengambilan keputusan.
+
+### 3.1 Non-Goals (Di Luar Cakupan Versi Ini)
+- Sistem akuntansi penuh (general ledger, pajak, dsb) — cukup pencatatan transaksi dasar.
+- E-commerce/toko online untuk publik (fokus internal, bukan customer-facing marketplace).
+- Integrasi otomatis dengan marketplace (Shopee/Tokopedia) — dapat menjadi roadmap fase berikutnya.
+
+---
+
+## 4. TARGET PENGGUNA & STRUKTUR MULTI-LEVEL
+
+Sistem menggunakan **Role-Based Access Control (RBAC)** dengan level akses bertingkat sebagai berikut:
+
+| Level | Role | Deskripsi Akses |
+|---|---|---|
+| **Level 0** | **Superadmin** | Kontrol teknis penuh atas sistem. Mengatur role & permission, konfigurasi sistem, backup/restore, audit log, integrasi teknis, dan reset akses darurat. |
+| **Level 1** | **Owner/Direktur** | Akses penuh ke semua data, laporan, dan dashboard bisnis. Dapat melihat seluruh divisi namun tidak mengurus konfigurasi teknis. |
+| **Level 2** | **Admin/Manajer Operasional** | Mengelola order masuk, assign ke divisi, memantau seluruh alur produksi, membuat laporan, mengelola absensi manual, dan mengatur tarif operator. |
+| **Level 3** | **Kepala Divisi / Mandor** | Mengelola tim & pekerjaan dalam divisinya, approve/reject output harian operator, approve hasil kerja staf, update status ke level berikutnya. |
+| **Level 4** | **Staf/Operator Divisi** | Mengerjakan tugas yang di-assign, input output harian (khusus borongan), update progres tugas, upload bukti kerja (foto/file). |
+| **Level 5** | **Customer (opsional/read-only)** | Melihat status order miliknya saja tanpa bisa mengubah data (fitur opsional untuk fase 3). |
+
+### 4.1 Daftar Divisi dalam Sistem
+
+1. **Divisi Penjualan/Pemasaran** — input order baru, data customer, follow-up pembayaran
+2. **Divisi Produksi** — koordinator/supervisor keseluruhan proses produksi CMT
+3. **Divisi Desain & Pola** — pembuatan desain, pattern making (pola potong), approval mockup
+4. **Divisi Cutting/Pemotongan** — pemotongan kain sesuai pola & ukuran per order
+5. **Divisi Jahit** — penjahitan garmen (kaus, baju, celana) oleh operator penjahit
+6. **Divisi Printing/Produksi Cetak** — sablon/DTF/DTG, quality control cetakan
+7. **Divisi Pemasangan/Finishing** — heat press, curing, pasang aksesori/label, QC akhir
+8. **Divisi Pembelian/Procurement** — pengadaan bahan baku, manajemen supplier, purchase order (PO)
+9. **Divisi Gudang & Logistik** — stok bahan baku, stok opname, packing, pengiriman
+10. **Divisi Keuangan & Akuntansi** — pencatatan pembayaran, invoice, biaya produksi, laporan laba rugi
+11. **Divisi HR/Personalia** — data karyawan, absensi, penggajian (borongan/harian/bulanan)
+
+> **Catatan:** Divisi Produksi bersifat koordinatif — bertugas memantau progres Cutting → Jahit → Printing → Pemasangan secara keseluruhan, menyelesaikan bottleneck antar sub-divisi, dan melapor ke Admin/Owner.
+
+---
+
+## 5. ALUR KERJA SISTEM (BUSINESS PROCESS FLOW)
+
+```
+[Customer Order]
+      ↓
+[Divisi Pemasaran] → Input data order (jenis produk, jumlah, ukuran, deadline, DP)
+      ↓
+[Divisi Desain & Pola] → Buat desain + pola potong → Approval Customer/Owner
+      ↓ (approved)
+[Divisi Pembelian/Procurement] → Cek ketersediaan bahan baku → PO ke supplier bila stok kurang
+      ↓
+[Divisi Produksi] → Koordinasi & jadwalkan pengerjaan ke Cutting, Jahit, Printing, Pemasangan
+      ↓
+[Divisi Cutting] → Potong kain sesuai pola & ukuran → Update status "Selesai Cutting"
+      ↓
+[Divisi Jahit] → Jahit potongan kain menjadi produk jadi → QC Jahit → Update status "Selesai Jahit"
+      ↓
+[Divisi Printing] → Proses cetak (sablon/DTF/DTG) → Update status "Selesai Cetak" (jika ada motif cetak)
+      ↓
+[Divisi Pemasangan/Finishing] → Heat press/curing/aksesori → QC akhir → Update status "Selesai Finishing"
+      ↓
+[Divisi Gudang] → Packing → Update status "Siap Kirim"
+      ↓
+[Pengiriman ke Customer] → Update status "Selesai/Delivered"
+      ↓
+[Divisi Keuangan & Akuntansi] → Update pelunasan pembayaran → Order Closed
+```
+
+> **Catatan 1:** Alur Pembelian/Procurement hanya aktif jika bahan baku kurang dari stok minimum. Jika stok mencukupi, proses langsung lanjut dari Desain ke Cutting.
+
+> **Catatan 2:** Divisi Printing bersifat kondisional — aktif hanya jika produk memerlukan cetak/sablon. Produk tanpa motif cetak langsung lanjut dari Jahit ke Pemasangan/Finishing.
+
+Setiap perpindahan status **memicu notifikasi otomatis** ke divisi berikutnya dan ke Admin/Owner.
+
+---
+
+## 6. FITUR UTAMA PER MODUL
+
+### 6.1 Modul Superadmin (Kontrol Teknis Sistem)
+- Kelola master role & permission (membuat/mengubah struktur hak akses tiap role)
+- Kelola konfigurasi umum sistem (nama perusahaan, logo, format invoice, dll)
+- Kelola struktur divisi (tambah/hapus/ubah divisi tanpa perlu development ulang)
+- Kelola integrasi teknis (API key, integrasi pihak ketiga)
+- Reset akses darurat (reset password/unlock akun user manapun)
+- Monitoring kesehatan sistem (uptime, error log, kapasitas penyimpanan)
+
+### 6.2 Modul Dashboard (Owner & Admin)
+- Ringkasan jumlah order aktif, selesai, terlambat
+- Grafik produksi per divisi (beban kerja, waktu rata-rata pengerjaan)
+- Grafik omzet & status pembayaran (lunas/DP/belum bayar)
+- Notifikasi order yang mendekati deadline atau macet di satu divisi
+- Rekap output operator produksi hari ini (total pcs selesai per divisi)
+
+### 6.3 Modul Manajemen Order
+- Input order baru (nama customer, kontak, jenis produk, jumlah, ukuran breakdown S/M/L/XL/XXL, desain, deadline, harga, DP)
+- Nomor order otomatis & tracking status real-time
+- Riwayat perubahan status (log/timeline order per divisi)
+- Upload file pendukung (desain, referensi, pola, bukti pembayaran)
+- Pencarian & filter order (berdasarkan status, customer, tanggal, divisi)
+
+### 6.4 Modul Divisi Produksi (Koordinator)
+- Dashboard progres seluruh order yang sedang berjalan di Cutting, Jahit, Printing, dan Pemasangan
+- Penjadwalan & alokasi target harian/mingguan per sub-divisi
+- Deteksi bottleneck (order yang tertahan lama di satu tahap)
+- Laporan kapasitas produksi vs jumlah order masuk
+- Eskalasi otomatis ke Admin/Owner bila ada order berisiko telat
+
+### 6.5 Modul Divisi Desain & Pola
+- Daftar tugas desain yang masuk dari order
+- Upload mockup desain & pola potong (pattern), revisi, dan versioning
+- Status: Menunggu → Dikerjakan → Revisi → Disetujui
+- Approval dari Admin/Customer sebelum lanjut ke Cutting
+- Catatan instruksi pola untuk divisi cutting (warna kain, arah serat, dll)
+
+### 6.6 Modul Divisi Cutting/Pemotongan
+- Daftar order yang sudah di-approve desain & polanya
+- Breakdown ukuran per order (jumlah pcs per ukuran S/M/L/XL/XXL)
+- Input output harian operator cutting (pcs per ukuran yang selesai dipotong)
+- Checklist QC cutting (akurasi ukuran, arah kain, tidak ada cacat)
+- Update status ke "Selesai Cutting" → notifikasi ke Divisi Jahit
+
+### 6.7 Modul Divisi Jahit
+- Daftar order siap jahit (sudah selesai cutting)
+- Assign order ke operator penjahit oleh Kepala Divisi/Mandor, termasuk penetapan tarif borongan per operator per order
+- Sistem self-report output harian:
+  - Operator login → lihat "Tugas Saya Hari Ini"
+  - Input pcs yang selesai dijahit per order per jenis produk
+  - Submit → status "Menunggu Approval Mandor"
+  - Mandor review & approve/reject dengan catatan
+  - Jika approved → tersimpan sebagai output resmi
+  - Jika rejected → operator revisi & submit ulang
+- Support multi-order dalam satu hari untuk satu operator
+- Support multi-jenis produk dalam satu hari untuk satu operator
+- Checklist QC jahit (kerapian jahitan, ukuran sesuai pola, tidak ada loncat jahit)
+- Update status ke "Selesai Jahit" → notifikasi ke Divisi Printing/Pemasangan
+
+### 6.8 Modul Divisi Printing
+- Daftar order yang sudah selesai dijahit dan membutuhkan proses cetak
+- Input jenis metode cetak (sablon manual/DTF/DTG), jumlah warna, estimasi waktu
+- Checklist QC hasil cetak (ketajaman warna, posisi cetakan, foto sebagai bukti)
+- Update status ke "Selesai Cetak"
+
+### 6.9 Modul Divisi Pemasangan/Finishing
+- Daftar order siap finishing
+- Input parameter proses (suhu heat press, waktu curing, jenis aksesori/label yang dipasang)
+- Checklist QC akhir (kerekatan, kerapian, kebersihan produk)
+- Update status ke "Selesai Finishing"
+
+### 6.10 Modul Divisi Pembelian/Procurement
+- Daftar kebutuhan bahan baku otomatis (berdasarkan order yang masuk & sisa stok)
+- Manajemen data supplier (nama, kontak, harga, riwayat transaksi)
+- Pembuatan Purchase Order (PO) ke supplier
+- Tracking status PO (dipesan, dikirim, diterima)
+- Perbandingan harga antar supplier untuk bahan yang sama
+- Riwayat pembelian per periode
+
+### 6.11 Modul Divisi Gudang & Logistik
+- Manajemen stok bahan baku (kain, benang, tinta, film DTF, aksesori, label, dll) — stok masuk/keluar
+- Checklist packing per order
+- Input data pengiriman (kurir, resi, tanggal kirim)
+- Peringatan stok menipis (low stock alert)
+- **Stok Opname:**
+  - Jadwal opname periodik (mingguan/bulanan) atau manual sewaktu-waktu
+  - Form input hasil hitung stok fisik oleh staf gudang
+  - Perbandingan otomatis stok sistem vs stok fisik, menampilkan selisih
+  - Kolom catatan alasan selisih (rusak, susut, salah input, hilang, dll)
+  - Approval penyesuaian stok oleh Kepala Divisi Gudang/Admin
+  - Riwayat & log hasil opname untuk audit dan analisa tren selisih
+
+### 6.12 Modul Divisi Keuangan & Akuntansi
+- Pencatatan pembayaran (DP, pelunasan)
+- Generate invoice otomatis per order
+- Rekap biaya produksi vs harga jual (margin sederhana)
+- Laporan kas masuk/keluar harian, mingguan, bulanan
+- Pencatatan biaya pembelian bahan baku (terhubung dengan modul Procurement)
+- Laporan laba rugi sederhana per periode
+- Rekap piutang customer (order yang belum lunas)
+- Integrasi data penggajian dari modul HR (total pengeluaran gaji sebagai biaya operasional)
+
+### 6.13 Modul HR/Personalia & Penggajian
+
+#### 6.13.1 Master Data Karyawan
+- Data lengkap karyawan (nama, NIK, jabatan, divisi, tanggal masuk, status aktif)
+- Tipe penggajian per karyawan: **Borongan / Harian / Bulanan**
+- Tarif default per karyawan (tarif harian untuk karyawan harian, gaji pokok untuk bulanan)
+- Data mesin/pos kerja untuk operator jahit/cutting
+
+#### 6.13.2 Sistem Absensi
+- **Absensi Manual oleh Admin/Mandor:**
+  - Admin/Mandor buka halaman absensi → pilih tanggal & divisi
+  - Tampil daftar karyawan divisi tersebut
+  - Input status per karyawan: Hadir / Izin / Sakit / Alpha
+  - Simpan → sistem rekap otomatis
+- Rekap absensi per periode (harian, mingguan, bulanan)
+- Laporan absensi per karyawan (ringkasan hadir, izin, sakit, alpha)
+- **Catatan:** Karyawan borongan tetap diabsen untuk keperluan monitoring kehadiran dan kapasitas produksi harian
+
+#### 6.13.3 Sistem Tarif Borongan Fleksibel
+- **Tarif bersifat dua dimensi:** per operator × per order/jenis produk
+  - Satu operator bisa memiliki tarif berbeda untuk order/produk yang berbeda (berdasarkan tingkat kesulitan)
+  - Satu order/produk bisa memiliki tarif berbeda untuk tiap operator (berdasarkan skill/pengalaman)
+- **Penetapan tarif dilakukan saat assign:**
+  - Kepala Divisi/Mandor assign operator ke order → input tarif borongan yang berlaku untuk kombinasi tersebut
+  - Tarif tersimpan per kombinasi: (Operator + Order + Jenis Produk)
+- Riwayat perubahan tarif (tarif lama tetap dipakai untuk output yang sudah tercatat)
+- Notifikasi ke operator jika tarif berubah
+- Contoh struktur tarif:
+
+  | Operator | Order/Produk | Tarif/pcs |
+  |---|---|---|
+  | Ahmad (Senior) | Kaus polos | Rp 6.000 |
+  | Rina (Junior) | Kaus polos | Rp 5.000 |
+  | Ahmad (Senior) | Celana cargo (sulit) | Rp 20.000 |
+  | Rina (Junior) | Celana cargo (sulit) | Rp 18.000 |
+  | Ahmad (Senior) | Jaket dengan lining (sangat sulit) | Rp 27.000 |
+
+#### 6.13.4 Sistem Output Harian & Approval (Borongan)
+- **Alur Self-Report oleh Operator:**
+  1. Operator login → buka "Tugas Saya Hari Ini"
+  2. Lihat daftar order yang di-assign beserta tarif/pcs masing-masing
+  3. Input pcs yang selesai per order per jenis produk
+  4. Submit → status berubah menjadi "Menunggu Approval Mandor"
+  5. Mandor mendapat notifikasi untuk review
+
+- **Alur Approval oleh Mandor/Kepala Divisi:**
+  1. Mandor buka dashboard "Output Harian — Perlu Approval"
+  2. Review output yang diklaim operator
+  3. **Approve:** output tersimpan sebagai data resmi, sistem hitung upah otomatis
+  4. **Reject + Catatan:** operator mendapat notifikasi & alasan reject, operator revisi & submit ulang
+
+- Support **multi-order dalam satu hari** untuk satu operator
+- Support **multi-jenis produk dalam satu hari** untuk satu operator
+- Sistem akumulasi output otomatis per periode
+
+#### 6.13.5 Perhitungan Upah Otomatis
+- **Borongan:**
+  - Total Upah = Σ (pcs_approved × tarif per kombinasi operator+order+produk)
+  - Berlaku per hari, terakumulasi per periode penggajian
+  - Riwayat tarif digunakan untuk menghitung output lama (tarif tidak berubah retroaktif)
+
+- **Harian:**
+  - Total Upah = (Jumlah Hari Hadir × Tarif Harian) + (Jam Lembur × Tarif Lembur)
+  - Potongan opsional untuk alpha sesuai kebijakan
+
+- **Bulanan:**
+  - Total Upah = Gaji Pokok + Tunjangan − Potongan (alpha/ketidakhadiran sesuai kebijakan)
+
+#### 6.13.6 Slip Gaji & Laporan Penggajian
+- Generate slip gaji otomatis per karyawan per periode
+- Slip borongan menampilkan: rincian pcs per order per jenis produk × tarif, total pcs, total upah
+- Slip harian menampilkan: rincian kehadiran, tarif harian, lembur (jika ada), total upah
+- Slip bulanan menampilkan: gaji pokok, tunjangan, potongan, total gaji bersih
+- Rekap total penggajian seluruh karyawan per periode
+- Export slip gaji & laporan penggajian ke Excel/PDF
+
+### 6.14 Modul Manajemen Pengguna & Hak Akses
+- Tambah/edit/nonaktifkan akun pengguna
+- Assign role & divisi per pengguna
+
+### 6.15 Modul Laporan & Analitik
+- Laporan produksi per periode (output per divisi, per order)
+- Laporan performa per divisi/karyawan/operator (jumlah pcs selesai, rata-rata waktu, keterlambatan)
+- Laporan penjualan & keuangan dasar
+- Laporan hasil stok opname & selisih stok
+- Laporan penggajian (total biaya tenaga kerja per periode, per divisi)
+- Laporan produktivitas operator (ranking output, tren harian/mingguan)
+- Export laporan ke Excel/PDF
+
+### 6.16 Modul Notifikasi
+- Notifikasi in-app untuk hand-off antar divisi
+- Notifikasi deadline mendekat/terlewat
+- Notifikasi output harian operator siap di-review (ke Mandor)
+- Notifikasi hasil approve/reject output (ke Operator)
+- Notifikasi perubahan tarif borongan (ke Operator terkait)
+- Notifikasi stok bahan baku menipis (ke Procurement & Gudang)
+
+---
+
+## 7. USER STORIES
+
+| ID | Sebagai | Saya ingin | Agar |
+|---|---|---|---|
+| US-01 | Staf Pemasaran | menginput order baru dengan detail lengkap (jenis produk, ukuran, jumlah, deadline) | data order tercatat rapi dan bisa langsung diteruskan ke Desain |
+| US-02 | Kepala Divisi Desain | melihat daftar tugas desain & pola yang masuk | bisa membagi tugas ke staf desain dan menyiapkan pola cutting |
+| US-03 | Staf Desain | upload mockup & pola potong dan menandai status "siap approval" | Admin/Customer bisa segera mengecek dan menyetujui sebelum kain dipotong |
+| US-04 | Staf Cutting | melihat order yang sudah di-approve pola & desainnya beserta breakdown ukuran | langsung bisa mulai proses pemotongan kain |
+| US-05 | Mandor Jahit | assign operator penjahit ke order tertentu dengan tarif borongan yang sesuai kesulitan | setiap operator tahu tugasnya dan tarif upahnya sejak awal |
+| US-06 | Operator Jahit | menginput jumlah pcs yang saya selesaikan hari ini untuk tiap order | upah borongan saya dihitung secara akurat dan transparan |
+| US-07 | Mandor Jahit | me-review dan approve/reject output harian operator | data output yang masuk ke sistem sudah terverifikasi kebenarannya |
+| US-08 | Staf Printing | melihat order yang sudah selesai dijahit dan perlu di-cetak | langsung bisa mulai proses sablon/DTF tanpa menunggu info manual |
+| US-09 | Kepala Divisi Pemasangan | approve hasil kerja stafnya sebelum lanjut ke gudang | kualitas terjaga sebelum sampai ke customer |
+| US-10 | Owner | melihat dashboard status semua order secara real-time | bisa mengambil keputusan cepat tanpa menanyakan satu per satu ke divisi |
+| US-11 | Admin | melakukan input absensi manual untuk karyawan harian | upah harian dihitung otomatis berdasarkan kehadiran yang saya catat |
+| US-12 | Staf Gudang | mendapat notifikasi otomatis saat order siap packing | proses packing & pengiriman tidak tertunda |
+| US-13 | Staf Keuangan | melihat status pembayaran tiap order dan data total penggajian bulan ini | bisa follow-up pelunasan dan rekap biaya tenaga kerja dengan akurat |
+| US-14 | Kepala Divisi Produksi | melihat progres semua order di Cutting, Jahit, Printing, dan Pemasangan dalam satu layar | bisa mendeteksi bottleneck dan order berisiko telat lebih awal |
+| US-15 | Staf Procurement | mendapat daftar kebutuhan bahan baku otomatis dari sistem | tidak perlu mengecek manual stok yang menipis |
+| US-16 | Staf Gudang | melakukan stok opname dan mencatat selisih stok fisik vs sistem | data stok selalu akurat dan penyebab selisih terdokumentasi |
+| US-17 | Owner | melihat laporan laba rugi sederhana per periode | bisa mengevaluasi kesehatan bisnis secara berkala |
+| US-18 | Admin HR | generate slip gaji otomatis untuk semua karyawan di akhir periode | proses penggajian lebih cepat, akurat, dan transparan |
+| US-19 | Operator Jahit | melihat riwayat output & upah saya per hari/bulan | saya bisa memantau sendiri akumulasi upah borongan saya |
+| US-20 | Superadmin | mengatur hak akses & menambah divisi baru langsung dari sistem | struktur organisasi bisa berubah tanpa perlu development ulang |
+
+---
+
+## 8. FUNCTIONAL REQUIREMENTS
+
+1. Sistem harus mendukung minimal 5 level role dengan hak akses berbeda (Superadmin, Owner, Admin, Kepala Divisi/Mandor, Staf/Operator).
+2. Sistem harus mencatat log setiap perubahan status order (siapa, kapan, status apa).
+3. Sistem harus mengirim notifikasi otomatis saat status order berubah/berpindah divisi.
+4. Sistem harus memungkinkan upload file (gambar/dokumen) di setiap tahap produksi.
+5. Sistem harus menyediakan dashboard berbeda sesuai role.
+6. Sistem harus mendukung alur self-report output harian oleh operator dengan mekanisme approve/reject oleh Mandor.
+7. Sistem harus mendukung tarif borongan yang berbeda per kombinasi Operator + Order + Jenis Produk.
+8. Sistem harus menghitung upah borongan secara otomatis berdasarkan output yang sudah di-approve.
+9. Sistem harus mendukung absensi manual oleh Admin/Mandor untuk karyawan harian dan bulanan.
+10. Sistem harus mendukung tiga tipe penggajian (Borongan, Harian, Bulanan) dalam satu sistem yang terintegrasi.
+11. Sistem harus menyimpan riwayat tarif borongan sehingga perubahan tarif tidak berdampak retroaktif pada output yang sudah tercatat.
+12. Sistem harus dapat menghasilkan laporan (produksi, keuangan, kinerja, penggajian) dalam format yang bisa diunduh.
+13. Sistem harus memiliki fitur pencarian & filter order (berdasarkan status, customer, tanggal, divisi).
+14. Sistem harus mendukung multi-user secara bersamaan tanpa konflik data.
+
+---
+
+## 9. NON-FUNCTIONAL REQUIREMENTS
+
+| Kategori | Requirement |
+|---|---|
+| **Performa** | Waktu load halaman < 3 detik untuk operasi normal |
+| **Keamanan** | Autentikasi login (username/password, opsional 2FA), enkripsi data sensitif |
+| **Skalabilitas** | Mendukung penambahan divisi, role, operator, dan jenis produk baru tanpa perombakan besar |
+| **Ketersediaan** | Uptime sistem minimal 99% (jika berbasis cloud/web) |
+| **Kompatibilitas** | Dapat diakses via browser desktop & mobile (responsive web) |
+| **Usability** | Antarmuka sederhana, mudah dipakai oleh staf non-teknis termasuk operator penjahit |
+
+---
+
+## 10. GAMBARAN DATA UTAMA (ENTITAS)
+
+- **User** (id, nama, email, role, divisi, level_akses, tipe_gaji [borongan/harian/bulanan], tarif_default, status_aktif)
+- **Order** (id, no_order, customer_id, tanggal_order, deadline, status, jenis_produk, total_harga, dp, sisa_bayar)
+- **Order_Item** (id, order_id, jenis_produk, ukuran [S/M/L/XL/XXL], jumlah_pcs)
+- **Customer** (id, nama, kontak, alamat, riwayat_order)
+- **Desain** (id, order_id, file_mockup, file_pola, versi, status_approval, catatan_instruksi_cutting)
+- **Produksi_Cutting** (id, order_id, operator_id, tanggal, pcs_per_ukuran, status_qc, catatan)
+- **Produksi_Jahit_Assign** (id, order_id, operator_id, jenis_produk_id, tarif_per_pcs, tanggal_assign, dibuat_oleh)
+- **Produksi_Jahit_Output** (id, assign_id, operator_id, order_id, jenis_produk_id, tanggal, pcs_klaim, pcs_approved, status [draft/menunggu_approval/approved/rejected], catatan_mandor, approved_by, approved_at)
+- **Tarif_Borongan_History** (id, operator_id, order_id, jenis_produk_id, tarif_per_pcs, berlaku_mulai, berlaku_sampai, dibuat_oleh)
+- **Produksi_Printing** (id, order_id, metode_cetak, tanggal_mulai, tanggal_selesai, status_qc)
+- **Produksi_Pemasangan** (id, order_id, tanggal_proses, parameter_proses, status_qc)
+- **Absensi** (id, karyawan_id, tanggal, status [hadir/izin/sakit/alpha], dicatat_oleh, waktu_input)
+- **Penggajian** (id, karyawan_id, periode_mulai, periode_selesai, tipe_gaji, total_pcs [borongan], total_upah_kotor, potongan, tunjangan, total_upah_bersih, status_bayar)
+- **Stok_Bahan** (id, nama_bahan, kategori [kain/benang/tinta/aksesori/dll], jumlah_stok, satuan, minimum_stok)
+- **Supplier** (id, nama, kontak, alamat, daftar_bahan_yang_disediakan)
+- **Purchase_Order** (id, supplier_id, tanggal_po, daftar_bahan, jumlah, harga, status_po)
+- **Stok_Opname** (id, tanggal, bahan_id, stok_sistem, stok_fisik, selisih, keterangan, status_approval)
+- **Pembayaran** (id, order_id, jumlah, tanggal, metode, status)
+
+---
+
+## 11. REKOMENDASI TEKNOLOGI (OPSIONAL)
+
+- **Web App berbasis cloud**: lebih mudah diakses semua divisi dari device masing-masing (HP/laptop) tanpa instalasi.
+- **Database terpusat**: agar semua divisi bekerja dengan data yang sama secara real-time.
+- **Skala bertahap**: dimulai dari versi sederhana (order tracking + role akses + manajemen jahit & cutting) sebelum menambah modul keuangan/laporan lanjutan.
+
+*(Pemilihan platform/tech stack spesifik sebaiknya didiskusikan dengan tim developer sesuai budget dan target rilis.)*
+
+---
+
+## 12. METRIK KEBERHASILAN (SUCCESS METRICS)
+
+1. Pengurangan waktu rata-rata proses order (dari masuk hingga selesai) minimal 20-30%.
+2. Pengurangan kesalahan produksi akibat miskomunikasi antar divisi.
+3. Owner dapat memantau status seluruh order tanpa perlu bertanya manual ke tiap divisi.
+4. Perhitungan upah borongan operator menjadi otomatis dan transparan — tidak ada selisih antara klaim operator dan catatan mandor.
+5. Tersedianya laporan performa divisi & operator secara berkala (harian/mingguan/bulanan).
+6. Tingkat adopsi sistem oleh seluruh divisi minimal 90% dalam 1 bulan setelah peluncuran.
+
+---
+
+## 13. ASUMSI & RISIKO
+
+**Asumsi:**
+- Seluruh staf & operator memiliki akses ke smartphone untuk mengoperasikan sistem (minimal untuk input output harian).
+- Ada pelatihan singkat untuk staf & operator sebelum sistem digunakan penuh.
+- Kebijakan penggajian (tarif harian, gaji pokok bulanan, tarif borongan dasar) sudah ditetapkan oleh manajemen sebelum sistem diimplementasi.
+
+**Risiko:**
+- Resistensi operator (penjahit/cutting) yang terbiasa cara manual → mitigasi dengan antarmuka mobile-friendly yang sederhana & pelatihan.
+- Ketidakakuratan input output harian oleh operator → diatasi dengan mekanisme approve/reject Mandor.
+- Data lama (order & riwayat upah sebelumnya) tidak tercatat digital → perlu proses migrasi/input manual data historis penting.
+- Ketergantungan pada koneksi internet jika berbasis cloud.
+
+---
+
+## 14. ROADMAP PENGEMBANGAN (SARAN BERTAHAP)
+
+| Fase | Fokus | Estimasi |
+|---|---|---|
+| **Fase 1 (MVP)** | Manajemen order, role & RBAC dasar, alur produksi CMT (Desain → Cutting → Jahit → Printing → Pemasangan → Gudang), notifikasi status | 5-7 minggu |
+| **Fase 2** | Modul HR & Penggajian (absensi manual, tarif borongan fleksibel, self-report output + approval mandor, slip gaji), Modul Keuangan & Akuntansi, Pembelian/Procurement, Stok Opname | 5-6 minggu |
+| **Fase 3** | Laporan & Analitik lengkap (performa operator, produktivitas, keuangan), Portal customer (read-only status order) | 3-4 minggu |
+| **Fase 4** | Integrasi marketplace (opsional), fitur lanjutan HR (absensi mobile self-service, BPJS tracker) | Sesuai kebutuhan |
+
+---
+
+## 15. LAMPIRAN — CATATAN TAMBAHAN
+
+Dokumen ini adalah draft revisi v2.0 yang telah diperluas dari v1.0 dengan penambahan:
+- Divisi Cutting dan Divisi Jahit sebagai divisi inti produksi CMT
+- Modul HR/Penggajian sebagai modul wajib (bukan opsional)
+- Sistem tarif borongan fleksibel dua dimensi (per operator × per order/jenis produk)
+- Mekanisme self-report output harian + approval Mandor untuk karyawan borongan
+- Sistem absensi manual oleh Admin/Mandor untuk karyawan harian & bulanan
+
+Dokumen dapat disesuaikan lebih lanjut berdasarkan:
+- Diskusi lebih rinci dengan tiap kepala divisi mengenai kebutuhan spesifik
+- Anggaran & timeline yang tersedia untuk pengembangan sistem
+- Jumlah pengguna aktual (khususnya jumlah operator jahit & cutting)
+- Kebijakan penggajian final yang ditetapkan manajemen Capolista
+
+---
+
+*Dokumen ini disusun sebagai dasar diskusi antara Owner Capolista Apparel dengan tim pengembang sebelum masuk ke tahap desain sistem (wireframe/UI) dan pengembangan teknis.*

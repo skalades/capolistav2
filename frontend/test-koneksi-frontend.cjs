@@ -32,7 +32,7 @@ async function testConnection() {
     { name: "PUBLIC (Client Fetch)", url: publicUrl }
   ];
 
-  for (const { name, url } from urlsToTest) {
+  for (const { name, url } of urlsToTest) {
     console.log(`⏳ Mengetes koneksi ke ${name} (${url})...`);
     const startTime = Date.now();
     try {

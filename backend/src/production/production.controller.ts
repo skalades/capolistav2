@@ -36,6 +36,14 @@ export class ProductionController {
     );
   }
 
+  @Patch('order/:id/substatus')
+  async updateSubStatus(
+    @Param('id') id: string,
+    @Body('subStatus') subStatus: string,
+  ) {
+    return await this.productionService.updateSubStatus(Number(id), subStatus);
+  }
+
   // --- Produksi Assign (Assignment Jahitan/Lainnya) ---
 
   @Post('assign')
@@ -103,4 +111,75 @@ export class ProductionController {
   ) {
     return this.productionService.approveOutput(id, approveOutputDto);
   }
+
+  // --- Modul Desain ---
+
+  @Get('desain/:orderId')
+  async getDesainByOrderId(@Param('orderId', ParseIntPipe) orderId: number) {
+    return this.productionService.getDesainByOrderId(orderId);
+  }
+
+  @Post('desain/:orderId')
+  async updateDesain(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body() body: { fileMockup?: string, filePola?: string, catatanInstruksiCutting?: string }
+  ) {
+    return this.productionService.updateDesain(orderId, body);
+  }
+
+  @Patch('desain/:orderId/approve')
+  async approveDesain(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body('status') status: 'DISETUJUI' | 'DITOLAK'
+  ) {
+    return this.productionService.approveDesain(orderId, status);
+  }
+
+  // --- Modul Cutting ---
+
+  @Get('cutting/:orderId')
+  async getCuttingByOrderId(@Param('orderId', ParseIntPipe) orderId: number) {
+    return this.productionService.getCuttingByOrderId(orderId);
+  }
+
+  @Post('cutting/:orderId')
+  async updateCutting(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body() body: { operatorId?: number, pcsPerUkuran?: any, status?: any, statusQc?: any, catatan?: string }
+  ) {
+    return this.productionService.updateCutting(orderId, body);
+  }
+
+  // --- Modul Printing ---
+
+  @Get('printing/:orderId')
+  async getPrintingByOrderId(@Param('orderId', ParseIntPipe) orderId: number) {
+    return this.productionService.getPrintingByOrderId(orderId);
+  }
+
+  @Post('printing/:orderId')
+  async updatePrinting(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body() body: { metodeCetak?: string, status?: any, statusQc?: any }
+  ) {
+    return this.productionService.updatePrinting(orderId, body);
+  }
+
+  // --- Modul Pemasangan / Finishing ---
+
+  @Get('pemasangan/:orderId')
+  async getPemasanganByOrderId(@Param('orderId', ParseIntPipe) orderId: number) {
+    return this.productionService.getPemasanganByOrderId(orderId);
+  }
+
+  @Post('pemasangan/:orderId')
+  async updatePemasangan(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body() body: { parameterProses?: string, status?: any, statusQc?: any }
+  ) {
+    return this.productionService.updatePemasangan(orderId, body);
+  }
 }
+
+
+

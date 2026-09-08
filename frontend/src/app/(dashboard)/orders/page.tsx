@@ -12,6 +12,7 @@ import { Search, Plus, PackageOpen } from "lucide-react"
 
 export default function OrdersPage() {
   const [filterStatus, setFilterStatus] = useState("ALL")
+  const [searchQuery, setSearchQuery] = useState("")
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   
@@ -28,9 +29,17 @@ export default function OrdersPage() {
       })
   }, [])
 
-  const filteredOrders = filterStatus === "ALL" 
-    ? orders 
-    : orders.filter(o => o.statusProduksi === filterStatus)
+  const filteredOrders = orders.filter(o => {
+    const matchStatus = filterStatus === "ALL" || o.statusProduksi === filterStatus;
+    const matchSearch = o.noOrder.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                        o.customerName.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchStatus && matchSearch;
+  });
+
+  const lateOrdersCount = orders.filter(o => {
+    if (o.statusProduksi === "SELESAI" || !o.deadline) return false;
+    return new Date(o.deadline) < new Date();
+  }).length;
 
   return (
     <div className="flex flex-col min-h-screen bg-capo-bg">
@@ -52,7 +61,7 @@ export default function OrdersPage() {
           />
           <KpiCard 
             title="Telat Deadline" 
-            value={0} 
+            value={lateOrdersCount} 
             caption="Melewati batas waktu pengiriman"
             status="danger"
           />
@@ -69,6 +78,8 @@ export default function OrdersPage() {
                   <input 
                     type="text" 
                     placeholder="Cari ID atau Kustomer..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-9 pr-4 py-2 text-[12.5px] rounded-md border border-capo-line bg-white focus:outline-none focus:ring-2 focus:ring-capo-accent/50"
                   />
                 </div>

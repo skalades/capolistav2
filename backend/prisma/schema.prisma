@@ -7,6 +7,273 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id                   Int                    @id @default(autoincrement())
+  nama                 String
+  email                String                 @unique
+  password             String
+  role                 Role                   @default(STAF)
+  divisi               Divisi
+  levelAkses           Int                    @default(4)
+  tipeGaji             TipeGaji               @default(BULANAN)
+  tarifDefault         Decimal?               @db.Decimal(10, 2)
+  statusAktif          Boolean                @default(true)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  absensi              Absensi[]
+  orders               Order[]                @relation("OrderCreatedBy")
+  OrderLog             OrderLog[]
+  penggajian           Penggajian[]
+  assignments          ProduksiAssign[]       @relation("AssignedOperator")
+  cuttingOperator      ProduksiCutting[]      @relation("OperatorCutting")
+  tarifBoronganHistory TarifBoronganHistory[]
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  nama      String
+  kontak    String?
+  alamat    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Order {
+  id                 Int                  @id @default(autoincrement())
+  noOrder            String               @unique
+  customerId         Int
+  tanggalOrder       DateTime             @default(now())
+  deadline           DateTime?
+  status             StatusOrder          @default(DRAFT)
+  totalHarga         Decimal              @db.Decimal(12, 2)
+  dp                 Decimal              @default(0) @db.Decimal(12, 2)
+  sisaBayar          Decimal              @default(0) @db.Decimal(12, 2)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  createdById        Int?
+  subStatus          String?
+  desains            Desain[]
+  createdBy          User?                @relation("OrderCreatedBy", fields: [createdById], references: [id])
+  customer           Customer             @relation(fields: [customerId], references: [id])
+  items              OrderItem[]
+  logs               OrderLog[]
+  pembayaran         Pembayaran[]
+  assignments        ProduksiAssign[]
+  produksiCutting    ProduksiCutting[]
+  produksiPemasangan ProduksiPemasangan[]
+  produksiPrinting   ProduksiPrinting[]
+}
+
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  orderId     Int
+  jenisProduk String
+  ukuran      String
+  jumlahPcs   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  order       Order    @relation(fields: [orderId], references: [id])
+}
+
+model ProduksiAssign {
+  id            Int              @id @default(autoincrement())
+  orderId       Int
+  operatorId    Int
+  tarifPerPcs   Decimal          @db.Decimal(10, 2)
+  tanggalAssign DateTime         @default(now())
+  jenisProduk   String?
+  operator      User             @relation("AssignedOperator", fields: [operatorId], references: [id])
+  order         Order            @relation(fields: [orderId], references: [id])
+  outputs       ProduksiOutput[]
+}
+
+model ProduksiOutput {
+  id            Int            @id @default(autoincrement())
+  assignId      Int
+  pcsKlaim      Int
+  pcsApproved   Int            @default(0)
+  status        StatusOutput   @default(MENUNGGU_APPROVAL)
+  catatanMandor String?
+  tanggalKlaim  DateTime       @default(now())
+  approvedAt    DateTime?
+  jenisProduk   String?
+  operatorId    Int?
+  orderId       Int?
+  assign        ProduksiAssign @relation(fields: [assignId], references: [id])
+}
+
+model Desain {
+  id                      Int                  @id @default(autoincrement())
+  orderId                 Int
+  fileMockup              String?
+  filePola                String?
+  versi                   Int                  @default(1)
+  statusApproval          StatusApprovalDesain @default(MENUNGGU)
+  catatanInstruksiCutting String?
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+  order                   Order                @relation(fields: [orderId], references: [id])
+}
+
+model ProduksiCutting {
+  id             Int            @id @default(autoincrement())
+  orderId        Int
+  operatorId     Int?
+  pcsPerUkuran   Json?
+  status         StatusProduksi @default(BELUM_MULAI)
+  statusQc       StatusQC?
+  catatan        String?
+  tanggalMulai   DateTime?
+  tanggalSelesai DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  operator       User?          @relation("OperatorCutting", fields: [operatorId], references: [id])
+  order          Order          @relation(fields: [orderId], references: [id])
+}
+
+model ProduksiPrinting {
+  id             Int            @id @default(autoincrement())
+  orderId        Int
+  metodeCetak    String?
+  status         StatusProduksi @default(BELUM_MULAI)
+  statusQc       StatusQC?
+  tanggalMulai   DateTime?
+  tanggalSelesai DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  order          Order          @relation(fields: [orderId], references: [id])
+}
+
+model ProduksiPemasangan {
+  id              Int            @id @default(autoincrement())
+  orderId         Int
+  parameterProses String?
+  status          StatusProduksi @default(BELUM_MULAI)
+  statusQc        StatusQC?
+  tanggalMulai    DateTime?
+  tanggalSelesai  DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  order           Order          @relation(fields: [orderId], references: [id])
+}
+
+model Supplier {
+  id             Int             @id @default(autoincrement())
+  nama           String
+  kontak         String?
+  alamat         String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  purchaseOrders PurchaseOrder[]
+}
+
+model StokBahan {
+  id             Int             @id @default(autoincrement())
+  namaBahan      String
+  kategori       KategoriBahan   @default(LAINNYA)
+  stok           Decimal         @default(0) @db.Decimal(10, 2)
+  minimumStok    Decimal         @default(0) @db.Decimal(10, 2)
+  satuan         String
+  hargaSatuan    Decimal         @db.Decimal(12, 2)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  purchaseOrders PurchaseOrder[]
+  opname         StokOpname[]
+}
+
+model PurchaseOrder {
+  id         Int       @id @default(autoincrement())
+  supplierId Int
+  bahanId    Int
+  jumlah     Decimal   @db.Decimal(10, 2)
+  totalHarga Decimal   @db.Decimal(12, 2)
+  status     StatusPO  @default(DRAFT)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  bahan      StokBahan @relation(fields: [bahanId], references: [id])
+  supplier   Supplier  @relation(fields: [supplierId], references: [id])
+}
+
+model StokOpname {
+  id         Int       @id @default(autoincrement())
+  bahanId    Int
+  stokSistem Decimal   @db.Decimal(10, 2)
+  stokFisik  Decimal   @db.Decimal(10, 2)
+  selisih    Decimal   @db.Decimal(10, 2)
+  catatan    String?
+  tanggal    DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  bahan      StokBahan @relation(fields: [bahanId], references: [id])
+}
+
+model Absensi {
+  id        Int         @id @default(autoincrement())
+  userId    Int
+  tanggal   DateTime    @default(now()) @db.Date
+  status    StatusAbsen
+  jamMasuk  DateTime?   @db.Time(6)
+  jamKeluar DateTime?   @db.Time(6)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation(fields: [userId], references: [id])
+}
+
+model Penggajian {
+  id              Int        @id @default(autoincrement())
+  userId          Int
+  periodeBulan    Int
+  periodeTahun    Int
+  tipeGaji        TipeGaji   @default(BULANAN)
+  totalPcs        Int        @default(0)
+  totalUpahKotor  Decimal    @default(0) @db.Decimal(12, 2)
+  potongan        Decimal    @default(0) @db.Decimal(12, 2)
+  tunjangan       Decimal    @default(0) @db.Decimal(12, 2)
+  totalUpahBersih Decimal    @default(0) @db.Decimal(12, 2)
+  status          StatusGaji @default(DRAFT)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  user            User       @relation(fields: [userId], references: [id])
+}
+
+model TarifBoronganHistory {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  orderId        Int?
+  jenisProduk    String?
+  tarifLama      Decimal  @db.Decimal(10, 2)
+  tarifBaru      Decimal  @db.Decimal(10, 2)
+  tanggalEfektif DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id])
+}
+
+model Pembayaran {
+  id               Int              @id @default(autoincrement())
+  orderId          Int
+  jumlah           Decimal          @db.Decimal(12, 2)
+  metodePembayaran MetodePembayaran
+  buktiPembayaran  String?
+  tanggalBayar     DateTime         @default(now())
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  order            Order            @relation(fields: [orderId], references: [id])
+}
+
+model OrderLog {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  userId    Int?
+  type      String
+  title     String
+  desc      String
+  createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
 enum Role {
   SUPERADMIN
   OWNER
@@ -35,40 +302,6 @@ enum TipeGaji {
   BULANAN
 }
 
-model User {
-  id           Int      @id @default(autoincrement())
-  nama         String
-  email        String   @unique
-  password     String
-  role         Role     @default(STAF)
-  divisi       Divisi
-  levelAkses   Int      @default(4)
-  tipeGaji     TipeGaji @default(BULANAN)
-  tarifDefault Decimal? @db.Decimal(10, 2)
-  statusAktif  Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  orders               Order[]                @relation("OrderCreatedBy")
-  assignments          ProduksiAssign[]       @relation("AssignedOperator")
-  cuttingOperator      ProduksiCutting[]      @relation("OperatorCutting")
-  absensi              Absensi[]
-  penggajian           Penggajian[]
-  tarifBoronganHistory TarifBoronganHistory[]
-  OrderLog             OrderLog[]
-}
-
-model Customer {
-  id        Int      @id @default(autoincrement())
-  nama      String
-  kontak    String?
-  alamat    String?  @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  orders Order[]
-}
-
 enum StatusOrder {
   DRAFT
   DESAIN
@@ -80,98 +313,16 @@ enum StatusOrder {
   SELESAI
 }
 
-model Order {
-  id           Int         @id @default(autoincrement())
-  noOrder      String      @unique
-  customer     Customer    @relation(fields: [customerId], references: [id])
-  customerId   Int
-  tanggalOrder DateTime    @default(now())
-  deadline     DateTime?
-  status       StatusOrder @default(DRAFT)
-  totalHarga   Decimal     @db.Decimal(12, 2)
-  dp           Decimal     @default(0) @db.Decimal(12, 2)
-  sisaBayar    Decimal     @default(0) @db.Decimal(12, 2)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-
-  createdBy   User? @relation("OrderCreatedBy", fields: [createdById], references: [id])
-  createdById Int?
-
-  items              OrderItem[]
-  assignments        ProduksiAssign[]
-  desains            Desain[]
-  produksiCutting    ProduksiCutting[]
-  produksiPrinting   ProduksiPrinting[]
-  produksiPemasangan ProduksiPemasangan[]
-  pembayaran         Pembayaran[]
-  logs               OrderLog[]
-}
-
-model OrderItem {
-  id          Int      @id @default(autoincrement())
-  order       Order    @relation(fields: [orderId], references: [id])
-  orderId     Int
-  jenisProduk String
-  ukuran      String // S/M/L/XL/XXL
-  jumlahPcs   Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model ProduksiAssign {
-  id            Int      @id @default(autoincrement())
-  orderId       Int
-  operatorId    Int
-  jenisProduk   String?
-  tarifPerPcs   Decimal  @db.Decimal(10, 2)
-  tanggalAssign DateTime @default(now())
-
-  order    Order @relation(fields: [orderId], references: [id])
-  operator User  @relation("AssignedOperator", fields: [operatorId], references: [id])
-
-  outputs ProduksiOutput[]
-}
-
 enum StatusOutput {
   MENUNGGU_APPROVAL
   APPROVED
   REJECTED
 }
 
-model ProduksiOutput {
-  id            Int          @id @default(autoincrement())
-  assignId      Int
-  operatorId    Int?
-  orderId       Int?
-  jenisProduk   String?
-  pcsKlaim      Int
-  pcsApproved   Int          @default(0)
-  status        StatusOutput @default(MENUNGGU_APPROVAL)
-  catatanMandor String?      @db.Text
-  tanggalKlaim  DateTime     @default(now())
-  approvedAt    DateTime?
-
-  assign ProduksiAssign @relation(fields: [assignId], references: [id])
-}
-
 enum StatusApprovalDesain {
   MENUNGGU
   DISETUJUI
   DITOLAK
-}
-
-model Desain {
-  id                      Int                  @id @default(autoincrement())
-  orderId                 Int
-  fileMockup              String?
-  filePola                String?
-  versi                   Int                  @default(1)
-  statusApproval          StatusApprovalDesain @default(MENUNGGU)
-  catatanInstruksiCutting String?              @db.Text
-  createdAt               DateTime             @default(now())
-  updatedAt               DateTime             @updatedAt
-
-  order Order @relation(fields: [orderId], references: [id])
 }
 
 enum StatusProduksi {
@@ -185,62 +336,6 @@ enum StatusQC {
   REJECT
 }
 
-model ProduksiCutting {
-  id             Int            @id @default(autoincrement())
-  orderId        Int
-  operatorId     Int?
-  pcsPerUkuran   Json?
-  status         StatusProduksi @default(BELUM_MULAI)
-  statusQc       StatusQC?
-  catatan        String?        @db.Text
-  tanggalMulai   DateTime?
-  tanggalSelesai DateTime?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-
-  order    Order @relation(fields: [orderId], references: [id])
-  operator User? @relation("OperatorCutting", fields: [operatorId], references: [id])
-}
-
-model ProduksiPrinting {
-  id             Int            @id @default(autoincrement())
-  orderId        Int
-  metodeCetak    String?
-  status         StatusProduksi @default(BELUM_MULAI)
-  statusQc       StatusQC?
-  tanggalMulai   DateTime?
-  tanggalSelesai DateTime?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-
-  order Order @relation(fields: [orderId], references: [id])
-}
-
-model ProduksiPemasangan {
-  id              Int            @id @default(autoincrement())
-  orderId         Int
-  parameterProses String?
-  status          StatusProduksi @default(BELUM_MULAI)
-  statusQc        StatusQC?
-  tanggalMulai    DateTime?
-  tanggalSelesai  DateTime?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-
-  order Order @relation(fields: [orderId], references: [id])
-}
-
-model Supplier {
-  id        Int      @id @default(autoincrement())
-  nama      String
-  kontak    String?
-  alamat    String?  @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  purchaseOrders PurchaseOrder[]
-}
-
 enum KategoriBahan {
   KAIN
   BENANG
@@ -249,53 +344,10 @@ enum KategoriBahan {
   LAINNYA
 }
 
-model StokBahan {
-  id          Int           @id @default(autoincrement())
-  namaBahan   String
-  kategori    KategoriBahan @default(LAINNYA)
-  stok        Decimal       @default(0) @db.Decimal(10, 2)
-  minimumStok Decimal       @default(0) @db.Decimal(10, 2)
-  satuan      String
-  hargaSatuan Decimal       @db.Decimal(12, 2)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  purchaseOrders PurchaseOrder[]
-  opname         StokOpname[]
-}
-
 enum StatusPO {
   DRAFT
   DISETUJUI
   DITERIMA
-}
-
-model PurchaseOrder {
-  id         Int      @id @default(autoincrement())
-  supplierId Int
-  bahanId    Int
-  jumlah     Decimal  @db.Decimal(10, 2)
-  totalHarga Decimal  @db.Decimal(12, 2)
-  status     StatusPO @default(DRAFT)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  supplier Supplier  @relation(fields: [supplierId], references: [id])
-  bahan    StokBahan @relation(fields: [bahanId], references: [id])
-}
-
-model StokOpname {
-  id         Int      @id @default(autoincrement())
-  bahanId    Int
-  stokSistem Decimal  @db.Decimal(10, 2)
-  stokFisik  Decimal  @db.Decimal(10, 2)
-  selisih    Decimal  @db.Decimal(10, 2)
-  catatan    String?  @db.Text
-  tanggal    DateTime @default(now())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  bahan StokBahan @relation(fields: [bahanId], references: [id])
 }
 
 enum StatusAbsen {
@@ -305,85 +357,14 @@ enum StatusAbsen {
   ALPA
 }
 
-model Absensi {
-  id        Int         @id @default(autoincrement())
-  userId    Int
-  tanggal   DateTime    @default(now()) @db.Date
-  status    StatusAbsen
-  jamMasuk  DateTime?   @db.Time
-  jamKeluar DateTime?   @db.Time
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  user User @relation(fields: [userId], references: [id])
-}
-
 enum StatusGaji {
   DRAFT
   DISETUJUI
   DIBAYAR
 }
 
-model Penggajian {
-  id              Int        @id @default(autoincrement())
-  userId          Int
-  periodeBulan    Int
-  periodeTahun    Int
-  tipeGaji        TipeGaji   @default(BULANAN)
-  totalPcs        Int        @default(0)
-  totalUpahKotor  Decimal    @default(0) @db.Decimal(12, 2)
-  potongan        Decimal    @default(0) @db.Decimal(12, 2)
-  tunjangan       Decimal    @default(0) @db.Decimal(12, 2)
-  totalUpahBersih Decimal    @default(0) @db.Decimal(12, 2)
-  status          StatusGaji @default(DRAFT)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-
-  user User @relation(fields: [userId], references: [id])
-}
-
-model TarifBoronganHistory {
-  id             Int      @id @default(autoincrement())
-  userId         Int
-  orderId        Int?
-  jenisProduk    String?
-  tarifLama      Decimal  @db.Decimal(10, 2)
-  tarifBaru      Decimal  @db.Decimal(10, 2)
-  tanggalEfektif DateTime @default(now())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id])
-}
-
 enum MetodePembayaran {
   CASH
   TRANSFER
   QRIS
-}
-
-model Pembayaran {
-  id               Int              @id @default(autoincrement())
-  orderId          Int
-  jumlah           Decimal          @db.Decimal(12, 2)
-  metodePembayaran MetodePembayaran
-  buktiPembayaran  String?
-  tanggalBayar     DateTime         @default(now())
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-
-  order Order @relation(fields: [orderId], references: [id])
-}
-
-model OrderLog {
-  id        Int      @id @default(autoincrement())
-  orderId   Int
-  userId    Int?
-  type      String // "system" atau "chat"
-  title     String
-  desc      String   @db.Text
-  createdAt DateTime @default(now())
-
-  order Order @relation(fields: [orderId], references: [id])
-  user  User? @relation(fields: [userId], references: [id])
 }

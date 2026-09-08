@@ -6,19 +6,91 @@ import { KanbanBoard, KanbanColumn, KanbanCard, KanbanCardType } from "@/compone
 import { Button } from "@/components/ui/Button"
 import { CheckSquare, Send, User, X } from "lucide-react"
 
-// Dummy data
-const ALL_ORDERS: KanbanCardType[] = [
-  { id: "1", orderId: "ORD-041", customer: "Tim Futsal Galaxy", product: "Jersey Sublim (S-XL) - 24 pcs", stage: "Menunggu", deadline: "Besok", metadata: { Pola: "Reguler", Penjahit: "Ahmad" } },
-  { id: "2", orderId: "ORD-042", customer: "PT Karya Abadi", product: "Kemeja Seragam - 50 pcs", stage: "Menunggu", metadata: { Pola: "Custom", Penjahit: "Belum assign" } },
-  { id: "3", orderId: "ORD-039", customer: "SDN 01 Pagi", product: "Seragam Olahraga - 120 pcs", stage: "Sedang Dijahit", deadline: "3 Hari lagi", metadata: { Penjahit: "Rina & Budi", Progress: "45%" } },
-  { id: "4", orderId: "ORD-035", customer: "Komunitas VESPA", product: "Jaket Windbreaker - 15 pcs", stage: "QC", metadata: { Penjahit: "Ahmad" } },
-  { id: "5", orderId: "ORD-030", customer: "BEM UI", product: "PDH - 80 pcs", stage: "Selesai", metadata: { Penjahit: "Rina" } },
-]
-
 const STAGES = ["Menunggu", "Sedang Dijahit", "QC", "Selesai"]
 
 export default function JahitPage() {
   const [activeCard, setActiveCard] = React.useState<KanbanCardType | null>(null)
+  const [orders, setOrders] = React.useState<KanbanCardType[]>([])
+  const [operators, setOperators] = React.useState<any[]>([])
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/production/board/JAHIT")
+      const data = await res.json()
+      const formatted = data.map((order: any) => {
+        const totalPcs = order.items.reduce((acc: number, item: any) => acc + item.jumlahPcs, 0)
+        const product = order.items.length > 0 ? `${order.items[0].jenisProduk} - ${totalPcs} pcs` : `Custom - ${totalPcs} pcs`
+        
+        let assignmentsText = null;
+        let tarifText = null;
+        if (order.assignments && order.assignments.length > 0) {
+          assignmentsText = order.assignments.map((a: any) => a.operator.nama).join(", ")
+          tarifText = order.assignments.map((a: any) => a.tarifPerPcs).join(", ")
+        }
+
+        return {
+          id: order.id.toString(),
+          orderId: order.noOrder,
+          customer: order.customer?.nama || "Unknown",
+          product,
+          stage: order.subStatus || "Menunggu",
+          deadline: order.deadline ? new Date(order.deadline).toLocaleDateString('id-ID') : "",
+          metadata: { 
+            Items: `${order.items.length} tipe`,
+            ...(assignmentsText && { Assignments: assignmentsText, Tarif: tarifText })
+          }
+        }
+      })
+      setOrders(formatted)
+    } catch (err) {
+      console.error("Failed to fetch jahit orders", err)
+    }
+  }
+
+  const fetchOperators = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/hr/operators/JAHIT")
+      const data = await res.json()
+      setOperators(data)
+    } catch (err) {
+      console.error("Failed to fetch operators", err)
+    }
+  }
+
+  React.useEffect(() => {
+    fetchOrders()
+    fetchOperators()
+  }, [])
+
+  const handleUpdateSubStatus = async (newStage: string) => {
+    if (!activeCard) return
+    try {
+      await fetch(`http://localhost:3000/production/order/${activeCard.id}/substatus`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subStatus: newStage })
+      })
+      setActiveCard(prev => prev ? { ...prev, stage: newStage } : null)
+      fetchOrders()
+    } catch (err) {
+      console.error("Failed to update status", err)
+    }
+  }
+
+  const handleNextStage = async () => {
+    if (!activeCard) return
+    try {
+      await fetch(`http://localhost:3000/production/order/${activeCard.id}/next-stage`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skipPrinting: false })
+      })
+      setActiveCard(null)
+      fetchOrders()
+    } catch (err) {
+      console.error("Failed to move next stage", err)
+    }
+  }
 
   return (
     <>
@@ -32,7 +104,7 @@ export default function JahitPage() {
         <div className="flex-1 overflow-hidden p-6">
           <KanbanBoard 
             stages={STAGES} 
-            orders={ALL_ORDERS} 
+            orders={orders} 
             activeCardId={activeCard?.id} 
             onCardClick={setActiveCard} 
           />
@@ -40,8 +112,8 @@ export default function JahitPage() {
 
         {/* Right Detail Panel */}
         {activeCard && (
-          <div className="w-[350px] bg-capo-panel border-l border-capo-line flex flex-col h-full shadow-xl z-10 transition-all">
-            <div className="p-4 border-b border-capo-line flex items-center justify-between bg-capo-bg">
+          <div className="w-[350px] bg-capo-panel border-l border-capo-line flex flex-col h-full shadow-xl z-10 transition-all overflow-y-auto">
+            <div className="p-4 border-b border-capo-line flex items-center justify-between bg-capo-bg sticky top-0 z-20">
               <div>
                 <h3 className="font-oswald text-[16px] font-semibold text-capo-ink">{activeCard.orderId}</h3>
                 <p className="text-[11.5px] text-capo-ink-soft">{activeCard.customer}</p>
@@ -54,78 +126,95 @@ export default function JahitPage() {
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-              <div className="mb-6">
+            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-6">
+              
+              {/* Instruksi Section */}
+              <div>
                 <h4 className="text-[11.5px] font-semibold text-capo-ink-soft uppercase tracking-wider mb-2">Instruksi Jahit</h4>
                 <div className="bg-white p-3 rounded-panel border border-capo-line text-[12.5px] text-capo-ink space-y-2">
                   <p><strong>Produk:</strong> {activeCard.product}</p>
-                  <p><strong>Benang:</strong> Polyester Hitam</p>
-                  <p><strong>Catatan:</strong> Perhatikan ukuran lengan, jangan sampai tertukar size M dan L.</p>
+                  <p><strong>Catatan:</strong> Kerjakan sesuai standar operasional jahit.</p>
                 </div>
               </div>
 
-              <div className="mb-6">
-                <h4 className="text-[11.5px] font-semibold text-capo-ink-soft uppercase tracking-wider mb-2">Checklist QC</h4>
-                <div className="space-y-2">
-                  {[
-                    "Kerapian jahitan kerah", 
-                    "Ukuran sesuai pola", 
-                    "Tidak ada loncat jahit"
-                  ].map((item, i) => (
-                    <label key={i} className="flex items-start gap-2 text-[12.5px] text-capo-ink cursor-pointer group">
-                      <input type="checkbox" className="mt-0.5 rounded-sm text-capo-accent focus:ring-capo-accent border-capo-line" />
-                      <span className="group-hover:text-capo-navy">{item}</span>
-                    </label>
+              {/* Assignment Section */}
+              <div>
+                <h4 className="text-[11.5px] font-semibold text-capo-ink-soft uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <User className="w-3.5 h-3.5" /> Penugasan Penjahit
+                </h4>
+                
+                {activeCard.metadata?.Assignments ? (
+                  <div className="bg-white p-3 rounded-panel border border-capo-line text-[12.5px] mb-3">
+                    <p className="font-medium text-capo-navy">{activeCard.metadata.Assignments}</p>
+                    <p className="text-capo-ink-soft mt-1">Tarif: Rp {activeCard.metadata.Tarif}</p>
+                  </div>
+                ) : (
+                  <div className="bg-capo-line/20 p-3 rounded-panel border border-capo-line border-dashed text-[11.5px] text-capo-ink-soft mb-3 text-center">
+                    Belum ada penjahit yang ditugaskan.
+                  </div>
+                )}
+                
+                <form 
+                  className="bg-white p-3 rounded-panel border border-capo-line space-y-3"
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const form = e.target as HTMLFormElement;
+                    const opId = form.operatorId.value;
+                    const tarif = form.tarif.value;
+                    if (!opId || !tarif) return;
+                    
+                    try {
+                      await fetch("http://localhost:3000/hr/assign-operator", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          orderId: Number(activeCard.id),
+                          operatorId: Number(opId),
+                          tarifPerPcs: Number(tarif)
+                        })
+                      });
+                      fetchOrders(); // Refresh to get updated assignments
+                      form.reset();
+                    } catch (err) {
+                      console.error("Gagal assign", err);
+                    }
+                  }}
+                >
+                  <select name="operatorId" required className="w-full text-[12px] p-2 border border-capo-line rounded focus:outline-none focus:ring-1 focus:ring-capo-navy">
+                    <option value="">-- Pilih Penjahit --</option>
+                    {operators.map((op: any) => (
+                      <option key={op.id} value={op.id}>{op.nama}</option>
+                    ))}
+                  </select>
+                  <input type="number" name="tarif" required placeholder="Tarif per Pcs (Rp)" className="w-full text-[12px] p-2 border border-capo-line rounded focus:outline-none focus:ring-1 focus:ring-capo-navy" />
+                  <Button type="submit" size="sm" className="w-full">Tugaskan</Button>
+                </form>
+              </div>
+
+              {/* Status Section */}
+              <div>
+                <h4 className="text-[11.5px] font-semibold text-capo-ink-soft uppercase tracking-wider mb-2">Pindahkan Status Internal</h4>
+                <div className="flex flex-wrap gap-2">
+                  {STAGES.map(s => (
+                    <Button 
+                      key={s} 
+                      variant={activeCard.stage === s ? "default" : "outline"} 
+                      size="sm" 
+                      onClick={() => handleUpdateSubStatus(s)}
+                      disabled={activeCard.stage === s}
+                    >
+                      {s}
+                    </Button>
                   ))}
                 </div>
               </div>
 
-              <div className="mb-6">
-                <h4 className="text-[11.5px] font-semibold text-capo-ink-soft uppercase tracking-wider mb-2">Aksi</h4>
+              {/* Aksi Final Section */}
+              <div className="border-t border-capo-line pt-4">
+                <h4 className="text-[11.5px] font-semibold text-capo-ink-soft uppercase tracking-wider mb-2">Aksi Lintas Divisi</h4>
                 <div className="flex gap-2">
-                  <Button variant="accent" className="flex-1">Kirim ke Printing</Button>
-                  <Button variant="danger" className="flex-1">Reject (Ulang)</Button>
+                  <Button variant="accent" className="flex-1" onClick={handleNextStage}>Kirim ke Printing</Button>
                 </div>
-              </div>
-
-              <div>
-                <h4 className="text-[11.5px] font-semibold text-capo-ink-soft uppercase tracking-wider mb-2">Riwayat Komunikasi</h4>
-                <div className="space-y-3 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-capo-line before:to-transparent">
-                  {/* Timeline items */}
-                  <div className="relative flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-capo-navy flex items-center justify-center shrink-0 z-10 text-white shadow-sm ring-2 ring-capo-panel">
-                      <User className="w-3 h-3" />
-                    </div>
-                    <div className="bg-white p-2 rounded-panel border border-capo-line text-[11.5px]">
-                      <span className="font-semibold text-capo-ink block">Desain</span>
-                      <span className="text-capo-ink">Pola sudah siap, silakan potong.</span>
-                      <span className="text-capo-ink-soft text-[10px] block mt-1">10:45 AM</span>
-                    </div>
-                  </div>
-                  <div className="relative flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-capo-accent flex items-center justify-center shrink-0 z-10 text-white shadow-sm ring-2 ring-capo-panel">
-                      <User className="w-3 h-3" />
-                    </div>
-                    <div className="bg-white p-2 rounded-panel border border-capo-line text-[11.5px]">
-                      <span className="font-semibold text-capo-ink block">Cutting</span>
-                      <span className="text-capo-ink">Sudah dipotong, diserahkan ke jahit.</span>
-                      <span className="text-capo-ink-soft text-[10px] block mt-1">13:20 PM</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-3 border-t border-capo-line bg-white">
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  placeholder="Kirim pesan/catatan..." 
-                  className="flex-1 border border-capo-line rounded-badge px-3 py-1.5 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-capo-navy"
-                />
-                <Button size="icon" variant="secondary" className="rounded-full shrink-0">
-                  <Send className="w-4 h-4" />
-                </Button>
               </div>
             </div>
           </div>

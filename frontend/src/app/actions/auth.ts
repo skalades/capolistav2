@@ -42,3 +42,25 @@ export async function logoutUser() {
   cookieStore.delete('token');
   return { success: true };
 }
+
+export async function getCurrentUser() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
+
+  if (!token) return null;
+
+  try {
+    const response = await fetch(`${API_URL}/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) return null;
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    return null;
+  }
+}

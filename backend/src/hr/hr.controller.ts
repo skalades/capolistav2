@@ -6,6 +6,7 @@ import {
   Param,
   Put,
   Delete,
+  Patch,
 } from '@nestjs/common';
 import { HrService } from './hr.service.js';
 
@@ -24,6 +25,11 @@ export class HrController {
     );
   }
 
+  @Get('operators/:divisi')
+  async getOperators(@Param('divisi') divisi: any) {
+    return await this.hrService.getOperators(divisi);
+  }
+
   @Get('mobile-tasks/:operatorId')
   async getMobileTasks(@Param('operatorId') operatorId: string) {
     return await this.hrService.getMobileTasks(Number(operatorId));
@@ -32,6 +38,19 @@ export class HrController {
   @Post('submit-output')
   async submitOutput(@Body() body: { assignId: number; pcsKlaim: number }) {
     return await this.hrService.submitOutput(body.assignId, body.pcsKlaim);
+  }
+
+  @Get('pending-approvals')
+  async getPendingApprovals() {
+    return await this.hrService.getPendingApprovals();
+  }
+
+  @Patch('approve-output/:id')
+  async approveOutput(
+    @Param('id') id: string,
+    @Body() body: { status: 'APPROVED' | 'REJECTED'; pcsApproved: number; catatanMandor?: string }
+  ) {
+    return await this.hrService.approveOutput(Number(id), body.status, body.pcsApproved, body.catatanMandor);
   }
 
   // =====================

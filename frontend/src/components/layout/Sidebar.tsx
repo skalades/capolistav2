@@ -17,7 +17,8 @@ import {
   Warehouse, 
   Wallet, 
   BarChart3, 
-  Users 
+  Users,
+  Banknote
 } from "lucide-react"
 
 const sidebarNav = [
@@ -45,6 +46,8 @@ const sidebarNav = [
   {
     group: "Sistem",
     items: [
+      { title: "Approval Borongan", href: "/hr/approval-borongan", icon: Users },
+      { title: "Penggajian", href: "/hr/penggajian", icon: Banknote },
       { title: "Laporan & Analitik", href: "/laporan", icon: BarChart3 },
       { title: "Pengguna & Akses", href: "/sistem/pengguna", icon: Users },
     ]
@@ -92,14 +95,27 @@ export function Sidebar() {
       </div>
 
       <div className="p-4 border-t border-white/10 bg-black/10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-capo-accent/20 flex items-center justify-center text-capo-accent font-bold text-sm">
-            OW
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-capo-accent/20 flex items-center justify-center text-capo-accent font-bold text-sm">
+              OW
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[12.5px] font-medium leading-tight">Budi Owner</span>
+              <span className="text-[10.5px] text-white/50">Owner</span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-[12.5px] font-medium leading-tight">Budi Owner</span>
-            <span className="text-[10.5px] text-white/50">Owner</span>
-          </div>
+          <button 
+            onClick={async () => {
+              const { logoutUser } = await import("@/app/actions/auth")
+              await logoutUser()
+              window.location.href = "/login"
+            }}
+            className="text-capo-danger hover:text-red-400 p-2"
+            title="Logout"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          </button>
         </div>
       </div>
     </aside>

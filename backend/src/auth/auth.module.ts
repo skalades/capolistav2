@@ -5,8 +5,11 @@ import { AuthController } from './auth.controller.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { JwtStrategy } from './jwt.strategy.js';
 
+import { PassportModule } from '@nestjs/passport';
+
 @Module({
   imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET || 'super-secret',
@@ -15,5 +18,6 @@ import { JwtStrategy } from './jwt.strategy.js';
   ],
   controllers: [AuthController],
   providers: [AuthService, PrismaService, JwtStrategy],
+  exports: [PassportModule, JwtModule]
 })
 export class AuthModule {}

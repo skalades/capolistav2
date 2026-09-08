@@ -33,6 +33,9 @@ export class ProductionService {
       include: {
         customer: true,
         items: true,
+        assignments: {
+          include: { operator: true }
+        }
       },
       orderBy: { deadline: 'asc' }, // Prioritas berdasarkan deadline terdekat
     });
@@ -70,6 +73,26 @@ export class ProductionService {
 
     return {
       message: `Order berhasil dipindahkan dari ${order.status} ke ${nextStatus}`,
+      order: updatedOrder,
+    };
+  }
+
+  async updateSubStatus(orderId: number, subStatus: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order tidak ditemukan');
+    }
+
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { subStatus },
+    });
+
+    return {
+      message: `Sub status order berhasil diperbarui menjadi ${subStatus}`,
       order: updatedOrder,
     };
   }
@@ -202,4 +225,167 @@ export class ProductionService {
       },
     });
   }
+
+  // --- Modul Desain ---
+
+  async getDesainByOrderId(orderId: number) {
+    let desain = await this.prisma.desain.findFirst({
+      where: { orderId },
+      orderBy: { versi: 'desc' }
+    });
+    
+    if (!desain) {
+      // Auto-create initial desain if not exists
+      desain = await this.prisma.desain.create({
+        data: {
+          orderId,
+          versi: 1,
+          statusApproval: 'MENUNGGU'
+        }
+      });
+    }
+    return desain;
+  }
+
+  async updateDesain(orderId: number, data: { fileMockup?: string, filePola?: string, catatanInstruksiCutting?: string }) {
+    const current = await this.getDesainByOrderId(orderId);
+    
+    return this.prisma.desain.update({
+      where: { id: current.id },
+      data: {
+        fileMockup: data.fileMockup ?? current.fileMockup,
+        filePola: data.filePola ?? current.filePola,
+        catatanInstruksiCutting: data.catatanInstruksiCutting ?? current.catatanInstruksiCutting,
+        versi: current.versi + 1, // Auto increment versi jika ada update
+        statusApproval: 'MENUNGGU' // Reset status
+      }
+    });
+  }
+
+  async approveDesain(orderId: number, status: 'DISETUJUI' | 'DITOLAK') {
+    const current = await this.getDesainByOrderId(orderId);
+    
+    return this.prisma.desain.update({
+      where: { id: current.id },
+      data: { statusApproval: status }
+    });
+  }
+
+  // --- Modul Cutting ---
+
+  async getCuttingByOrderId(orderId: number) {
+    let cutting = await this.prisma.produksiCutting.findFirst({
+      where: { orderId },
+      include: { operator: { select: { nama: true } } }
+    });
+
+    if (!cutting) {
+      cutting = await this.prisma.produksiCutting.create({
+        data: {
+          orderId,
+          status: 'BELUM_MULAI'
+        },
+        include: { operator: { select: { nama: true } } }
+      });
+    }
+
+    // Ambil juga instruksi dari divisi desain
+    const desain = await this.prisma.desain.findFirst({
+      where: { orderId },
+      orderBy: { versi: 'desc' },
+      select: { catatanInstruksiCutting: true, filePola: true }
+    });
+
+    return { ...cutting, desainInfo: desain };
+  }
+
+  async updateCutting(orderId: number, data: { operatorId?: number, pcsPerUkuran?: any, status?: any, statusQc?: any, catatan?: string }) {
+    const current = await this.prisma.produksiCutting.findFirst({ where: { orderId } });
+    if (!current) throw new NotFoundException('Data cutting tidak ditemukan');
+
+    const updateData: any = {
+      operatorId: data.operatorId !== undefined ? data.operatorId : current.operatorId,
+      pcsPerUkuran: data.pcsPerUkuran !== undefined ? data.pcsPerUkuran : current.pcsPerUkuran,
+      status: data.status !== undefined ? data.status : current.status,
+      statusQc: data.statusQc !== undefined ? data.statusQc : current.statusQc,
+      catatan: data.catatan !== undefined ? data.catatan : current.catatan,
+    };
+
+    if (data.status === 'PROSES' && current.status === 'BELUM_MULAI') {
+      updateData.tanggalMulai = new Date();
+    } else if (data.status === 'SELESAI' && current.status !== 'SELESAI') {
+      updateData.tanggalSelesai = new Date();
+    }
+
+    return this.prisma.produksiCutting.update({
+      where: { id: current.id },
+      data: updateData,
+      include: { operator: { select: { nama: true } } }
+    });
+  }
+
+  // --- Modul Printing ---
+
+  async getPrintingByOrderId(orderId: number) {
+    let printing = await this.prisma.produksiPrinting.findFirst({ where: { orderId } });
+    if (!printing) {
+      printing = await this.prisma.produksiPrinting.create({
+        data: { orderId, status: 'BELUM_MULAI' }
+      });
+    }
+    return printing;
+  }
+
+  async updatePrinting(orderId: number, data: { metodeCetak?: string, status?: any, statusQc?: any }) {
+    const current = await this.prisma.produksiPrinting.findFirst({ where: { orderId } });
+    if (!current) throw new NotFoundException('Data printing tidak ditemukan');
+
+    const updateData: any = {
+      metodeCetak: data.metodeCetak !== undefined ? data.metodeCetak : current.metodeCetak,
+      status: data.status !== undefined ? data.status : current.status,
+      statusQc: data.statusQc !== undefined ? data.statusQc : current.statusQc,
+    };
+
+    if (data.status === 'PROSES' && current.status === 'BELUM_MULAI') {
+      updateData.tanggalMulai = new Date();
+    } else if (data.status === 'SELESAI' && current.status !== 'SELESAI') {
+      updateData.tanggalSelesai = new Date();
+    }
+
+    return this.prisma.produksiPrinting.update({ where: { id: current.id }, data: updateData });
+  }
+
+  // --- Modul Pemasangan / Finishing ---
+
+  async getPemasanganByOrderId(orderId: number) {
+    let pemasangan = await this.prisma.produksiPemasangan.findFirst({ where: { orderId } });
+    if (!pemasangan) {
+      pemasangan = await this.prisma.produksiPemasangan.create({
+        data: { orderId, status: 'BELUM_MULAI' }
+      });
+    }
+    return pemasangan;
+  }
+
+  async updatePemasangan(orderId: number, data: { parameterProses?: string, status?: any, statusQc?: any }) {
+    const current = await this.prisma.produksiPemasangan.findFirst({ where: { orderId } });
+    if (!current) throw new NotFoundException('Data pemasangan tidak ditemukan');
+
+    const updateData: any = {
+      parameterProses: data.parameterProses !== undefined ? data.parameterProses : current.parameterProses,
+      status: data.status !== undefined ? data.status : current.status,
+      statusQc: data.statusQc !== undefined ? data.statusQc : current.statusQc,
+    };
+
+    if (data.status === 'PROSES' && current.status === 'BELUM_MULAI') {
+      updateData.tanggalMulai = new Date();
+    } else if (data.status === 'SELESAI' && current.status !== 'SELESAI') {
+      updateData.tanggalSelesai = new Date();
+    }
+
+    return this.prisma.produksiPemasangan.update({ where: { id: current.id }, data: updateData });
+  }
 }
+
+
+

@@ -9,6 +9,20 @@ import { PrismaService } from '../prisma/prisma.service.js';
 export class HrService {
   constructor(private prisma: PrismaService) {}
 
+  async getOperators(divisi: any) {
+    return await this.prisma.user.findMany({
+      where: {
+        divisi: divisi,
+        role: 'STAF'
+      },
+      select: {
+        id: true,
+        nama: true,
+        tarifDefault: true
+      }
+    });
+  }
+
   async assignOperator(
     orderId: number,
     operatorId: number,
@@ -25,6 +39,20 @@ export class HrService {
     });
     if (!operator || operator.role !== 'STAF') {
       throw new BadRequestException('Operator tidak valid atau bukan staf');
+    }
+
+    const existingAssign = await this.prisma.produksiAssign.findFirst({
+      where: {
+        orderId,
+        operatorId,
+      }
+    });
+
+    if (existingAssign) {
+      return await this.prisma.produksiAssign.update({
+        where: { id: existingAssign.id },
+        data: { tarifPerPcs }
+      });
     }
 
     return await this.prisma.produksiAssign.create({
@@ -80,6 +108,33 @@ export class HrService {
         pcsKlaim,
         status: 'MENUNGGU_APPROVAL',
       },
+    });
+  }
+
+  async getPendingApprovals() {
+    return await this.prisma.produksiOutput.findMany({
+      where: { status: 'MENUNGGU_APPROVAL' },
+      include: {
+        assign: {
+          include: {
+            order: true,
+            operator: true,
+          }
+        }
+      },
+      orderBy: { tanggalKlaim: 'asc' }
+    });
+  }
+
+  async approveOutput(id: number, status: 'APPROVED' | 'REJECTED', pcsApproved: number, catatanMandor?: string) {
+    return await this.prisma.produksiOutput.update({
+      where: { id },
+      data: {
+        status,
+        pcsApproved: status === 'APPROVED' ? pcsApproved : 0,
+        catatanMandor,
+        approvedAt: status === 'APPROVED' ? new Date() : null,
+      }
     });
   }
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/app/actions/auth";
+import { getSettings } from "@/app/actions/settings";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -10,6 +11,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState("Capolista");
+
+  useEffect(() => {
+    getSettings().then(data => {
+      if (data) {
+        if (data.logoUrl) setLogoUrl(data.logoUrl);
+        if (data.companyName) setCompanyName(data.companyName);
+      }
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +36,12 @@ export default function LoginPage() {
       setErrorMsg(result.error || "Login failed");
       setIsLoading(false);
     }
+  };
+
+  const getFullLogoUrl = (path: string) => {
+    if (path.startsWith('http')) return path;
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3005";
+    return `${baseUrl}${path}`;
   };
 
   return (
@@ -45,9 +63,15 @@ export default function LoginPage() {
           <div className="absolute bottom-0 right-0 w-2 h-2 bg-capo-ink" />
 
           <div className="text-center mb-8">
-            <h1 className="font-oswald text-4xl text-capo-ink uppercase tracking-tight mb-1">
-              Capolista
-            </h1>
+            {logoUrl ? (
+              <div className="flex justify-center mb-4">
+                <img src={getFullLogoUrl(logoUrl)} alt={companyName} className="max-h-24 object-contain" />
+              </div>
+            ) : (
+              <h1 className="font-oswald text-4xl text-capo-ink uppercase tracking-tight mb-1">
+                {companyName}
+              </h1>
+            )}
             <p className="font-mono text-xs text-capo-ink-soft mb-4">
               AUTHORIZATION REQUIRED
             </p>

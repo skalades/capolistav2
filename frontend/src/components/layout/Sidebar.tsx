@@ -18,7 +18,10 @@ import {
   Wallet, 
   BarChart3, 
   Users,
-  Banknote
+  Banknote,
+  FileEdit,
+  Box,
+  Truck
 } from "lucide-react"
 
 const sidebarNav = [
@@ -30,15 +33,17 @@ const sidebarNav = [
     ]
   },
   {
-    group: "Divisi",
+    group: "Divisi & Alur",
     items: [
-      { title: "Produksi", href: "/divisi/produksi", icon: Factory },
-      { title: "Desain", href: "/divisi/desain", icon: PenTool },
-      { title: "Cutting", href: "/divisi/cutting", icon: Scissors },
-      { title: "Jahit", href: "/divisi/jahit", icon: Shirt },
+      { title: "Draft", href: "/divisi/draft", icon: FileEdit },
+      { title: "Design", href: "/divisi/desain", icon: PenTool },
+      { title: "Procurement", href: "/divisi/pembelian", icon: ShoppingCart },
       { title: "Printing", href: "/divisi/printing", icon: Printer },
       { title: "Pemasangan", href: "/divisi/pemasangan", icon: Hammer },
-      { title: "Pembelian", href: "/divisi/pembelian", icon: ShoppingCart },
+      { title: "Cutting", href: "/divisi/cutting", icon: Scissors },
+      { title: "Jahit", href: "/divisi/jahit", icon: Shirt },
+      { title: "Packing", href: "/divisi/packing", icon: Box },
+      { title: "Dikirim", href: "/divisi/dikirim", icon: Truck },
       { title: "Gudang & Stok", href: "/divisi/gudang", icon: Warehouse },
       { title: "Keuangan", href: "/divisi/keuangan", icon: Wallet },
     ]

@@ -35,7 +35,7 @@ export function PengaturanClient({ initialSettings }: { initialSettings: any }) 
       // Create full URL (assuming backend is at API_URL)
       const fullUrl = process.env.NEXT_PUBLIC_API_URL 
         ? `${process.env.NEXT_PUBLIC_API_URL}${res.data.url}` 
-        : `http://localhost:3001${res.data.url}`;
+        : `http://127.0.0.1:3005${res.data.url}`;
       
       setFormData({ ...formData, logoUrl: fullUrl })
       setMessage({ type: 'success', text: 'Logo berhasil diunggah! Jangan lupa klik Simpan Pengaturan.' })

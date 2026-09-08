@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
+import { StatusOrder } from '@prisma/client';
 
 @Injectable()
 export class OrdersService {
@@ -84,11 +85,21 @@ export class OrdersService {
         },
       });
 
+      // 4. Buat OrderLog awal
+      await tx.orderLog.create({
+        data: {
+          orderId: newOrder.id,
+          userId: createdById,
+          type: 'system',
+          title: 'Order Dibuat',
+          desc: 'Order baru ditambahkan ke sistem.',
+        },
+      });
+
       return newOrder;
     });
   }
 
-  // Mengambil data dengan format yang siap dirender frontend/UI
   async findAllOrders() {
     const orders = await this.prisma.order.findMany({
       include: { customer: true },
@@ -101,19 +112,25 @@ export class OrdersService {
       customerName: order.customer.nama,
       statusPembayaran:
         order.sisaBayar <= 0 ? 'Lunas' : order.dp > 0 ? 'DP' : 'Belum Bayar',
-      // tag pembayaran untuk dicocokkan dengan Design System (Teal, Gold, Danger)
       statusColor:
         order.sisaBayar <= 0 ? 'Teal' : order.dp > 0 ? 'Gold' : 'Red',
       statusProduksi: order.status,
       deadline: order.deadline,
     }));
   }
+
   async findOne(id: number) {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: {
         customer: true,
         items: true,
+        logs: {
+          include: {
+            user: { select: { nama: true, divisi: true } }
+          },
+          orderBy: { createdAt: 'asc' }
+        }
       },
     });
 
@@ -125,15 +142,12 @@ export class OrdersService {
 
   async update(id: number, updateOrderDto: any) {
     const order = await this.findOne(id);
-
-    // Simplification for updating order
     const { items, ...orderData } = updateOrderDto;
 
     return await this.prisma.order.update({
       where: { id },
       data: {
         ...orderData,
-        // (Items update strategy can be implemented separately, keeping it simple for now)
       },
       include: {
         customer: true,
@@ -143,16 +157,50 @@ export class OrdersService {
   }
 
   async remove(id: number) {
-    // Check if exists
     await this.findOne(id);
 
-    // Delete related items first due to foreign key constraint
-    await this.prisma.orderItem.deleteMany({
-      where: { orderId: id },
-    });
+    await this.prisma.$transaction([
+      this.prisma.orderItem.deleteMany({ where: { orderId: id } }),
+      this.prisma.orderLog.deleteMany({ where: { orderId: id } }),
+      this.prisma.order.delete({ where: { id } })
+    ]);
 
-    return await this.prisma.order.delete({
-      where: { id },
+    return { success: true };
+  }
+
+  async updateStatus(id: number, status: StatusOrder, catatan: string, userId: number) {
+    return await this.prisma.$transaction(async (tx: any) => {
+      const order = await tx.order.update({
+        where: { id },
+        data: { status },
+      });
+
+      await tx.orderLog.create({
+        data: {
+          orderId: id,
+          userId,
+          type: 'system',
+          title: `Status diubah ke ${status}`,
+          desc: catatan || 'Status order diperbarui.',
+        },
+      });
+
+      return order;
+    });
+  }
+
+  async addChatLog(orderId: number, message: string, userId: number) {
+    return await this.prisma.orderLog.create({
+      data: {
+        orderId,
+        userId,
+        type: 'chat',
+        title: 'Komentar Baru',
+        desc: message,
+      },
+      include: {
+        user: { select: { nama: true, divisi: true } }
+      }
     });
   }
 }

@@ -12,10 +12,10 @@ import {
 import { OrdersService } from './orders.service.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import { UpdateOrderDto } from './dto/update-order.dto.js';
+import { StatusOrder } from '@prisma/client';
 // import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 // import { RolesGuard } from '../auth/guards/roles.guard';
 // import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '@prisma/client';
 
 @Controller('orders')
 // @UseGuards(JwtAuthGuard, RolesGuard)
@@ -25,8 +25,7 @@ export class OrdersController {
   @Post()
   // @Roles(Role.SUPERADMIN, Role.OWNER, Role.ADMIN, Role.PEMASARAN)
   async create(@Body() createOrderDto: CreateOrderDto, @Request() req: any) {
-    // Simulasi user ID untuk saat ini karena Auth belum sepenuhnya jadi
-    const userId = req.user?.id || 1;
+    const userId = req.user?.id || null;
     return await this.ordersService.createOrder(createOrderDto, userId);
   }
 
@@ -34,6 +33,7 @@ export class OrdersController {
   async findAll() {
     return await this.ordersService.findAllOrders();
   }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return await this.ordersService.findOne(+id);
@@ -50,5 +50,26 @@ export class OrdersController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return await this.ordersService.remove(+id);
+  }
+
+  @Patch(':id/status')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: StatusOrder,
+    @Body('catatan') catatan: string,
+    @Request() req: any
+  ) {
+    const userId = req.user?.id || null;
+    return await this.ordersService.updateStatus(+id, status, catatan, userId);
+  }
+
+  @Post(':id/logs')
+  async addLog(
+    @Param('id') id: string,
+    @Body('message') message: string,
+    @Request() req: any
+  ) {
+    const userId = req.user?.id || null;
+    return await this.ordersService.addChatLog(+id, message, userId);
   }
 }

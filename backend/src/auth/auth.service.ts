@@ -36,7 +36,13 @@ export class AuthService {
     }
 
     // Generate JWT
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { 
+      sub: user.id, 
+      email: user.email, 
+      role: user.role,
+      divisi: user.divisi,
+      levelAkses: user.levelAkses
+    };
     const access_token = await this.jwtService.signAsync(payload);
 
     // Return token and user info without password

@@ -2,25 +2,28 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { loginUser } from "@/app/actions/auth";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMsg("");
     
-    // Mock login for now
-    console.log("Login attempt with:", { email, password });
+    const result = await loginUser(email, password);
     
-    setTimeout(() => {
-      setIsLoading(false);
-      // Redirect to dashboard (mock)
+    if (result.success) {
       router.push("/");
-    }, 1000);
+    } else {
+      setErrorMsg(result.error || "Login failed");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -45,9 +48,14 @@ export default function LoginPage() {
             <h1 className="font-oswald text-4xl text-capo-ink uppercase tracking-tight mb-1">
               Capolista
             </h1>
-            <p className="font-mono text-xs text-capo-ink-soft">
+            <p className="font-mono text-xs text-capo-ink-soft mb-4">
               AUTHORIZATION REQUIRED
             </p>
+            {errorMsg && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded text-sm font-mono">
+                {errorMsg}
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">

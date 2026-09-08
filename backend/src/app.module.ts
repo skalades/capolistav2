@@ -9,9 +9,17 @@ import { HrModule } from './hr/hr.module.js';
 import { InventoryModule } from './inventory/inventory.module.js';
 import { FinanceModule } from './finance/finance.module.js';
 import { SettingsModule } from './settings/settings.module.js';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
-  imports: [AuthModule, UsersModule, OrdersModule, ProductionModule, HrModule, InventoryModule, FinanceModule, SettingsModule],
+  imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+    }),
+    AuthModule, UsersModule, OrdersModule, ProductionModule, HrModule, InventoryModule, FinanceModule, SettingsModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

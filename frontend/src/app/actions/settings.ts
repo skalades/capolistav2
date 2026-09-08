@@ -51,3 +51,28 @@ export async function updateSettings(data: any) {
     return { success: false, error: 'Terjadi kesalahan saat menyimpan pengaturan' }
   }
 }
+
+export async function uploadLogoFile(formData: FormData) {
+  try {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('token')?.value
+    
+    const res = await fetch(`${API_URL}/settings/upload-logo`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+        // Don't set Content-Type for FormData, fetch does it automatically with boundary
+      },
+      body: formData
+    })
+    
+    if (!res.ok) {
+      throw new Error('Failed to upload logo')
+    }
+    
+    return { success: true, data: await res.json() }
+  } catch (error) {
+    console.error('Error uploading logo:', error)
+    return { success: false, error: 'Gagal mengunggah logo' }
+  }
+}

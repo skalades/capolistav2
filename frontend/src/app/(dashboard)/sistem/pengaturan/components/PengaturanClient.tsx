@@ -1,11 +1,13 @@
 'use client'
 
 import React, { useState } from 'react'
-import { updateSettings } from '@/app/actions/settings'
-import { Save, Loader2 } from 'lucide-react'
+import { updateSettings, uploadLogoFile } from '@/app/actions/settings'
+import { Save, Loader2, Upload, Image as ImageIcon } from 'lucide-react'
+import Image from 'next/image'
 
 export function PengaturanClient({ initialSettings }: { initialSettings: any }) {
   const [loading, setLoading] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
   const [formData, setFormData] = useState({
     logoUrl: initialSettings?.logoUrl || '',
     companyName: initialSettings?.companyName || 'Capolista',
@@ -18,6 +20,30 @@ export function PengaturanClient({ initialSettings }: { initialSettings: any }) 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingLogo(true)
+    const data = new FormData()
+    data.append('file', file)
+
+    const res = await uploadLogoFile(data)
+    if (res.success && res.data?.url) {
+      // Create full URL (assuming backend is at API_URL)
+      const fullUrl = process.env.NEXT_PUBLIC_API_URL 
+        ? `${process.env.NEXT_PUBLIC_API_URL}${res.data.url}` 
+        : `http://localhost:3001${res.data.url}`;
+      
+      setFormData({ ...formData, logoUrl: fullUrl })
+      setMessage({ type: 'success', text: 'Logo berhasil diunggah! Jangan lupa klik Simpan Pengaturan.' })
+    } else {
+      setMessage({ type: 'error', text: res.error || 'Gagal mengunggah logo' })
+    }
+    setUploadingLogo(false)
+    setTimeout(() => setMessage(null), 4000)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,7 +61,6 @@ export function PengaturanClient({ initialSettings }: { initialSettings: any }) 
     
     setLoading(false)
     
-    // Hilangkan pesan setelah 3 detik
     setTimeout(() => setMessage(null), 3000)
   }
 
@@ -68,16 +93,30 @@ export function PengaturanClient({ initialSettings }: { initialSettings: any }) 
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">URL Logo</label>
-              <input 
-                type="text" 
-                name="logoUrl" 
-                value={formData.logoUrl} 
-                onChange={handleChange}
-                placeholder="https://example.com/logo.png"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-capo-accent"
-              />
-              <p className="text-xs text-gray-500 mt-1">Masukkan URL gambar untuk logo sistem.</p>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Logo Perusahaan</label>
+              <div className="flex items-center gap-6">
+                <div className="w-24 h-24 border rounded-md flex items-center justify-center bg-gray-50 overflow-hidden relative">
+                  {formData.logoUrl ? (
+                    <img src={formData.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                  ) : (
+                    <ImageIcon className="w-8 h-8 text-gray-300" />
+                  )}
+                </div>
+                <div>
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    {uploadingLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    {uploadingLogo ? 'Mengunggah...' : 'Pilih Gambar'}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleFileChange}
+                      disabled={uploadingLogo}
+                      className="hidden" 
+                    />
+                  </label>
+                  <p className="text-xs text-gray-500 mt-2">Gunakan format PNG, JPG, atau WEBP. Maks. 2MB.</p>
+                </div>
+              </div>
             </div>
 
             <div>

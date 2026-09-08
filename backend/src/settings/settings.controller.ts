@@ -1,6 +1,6 @@
 import { Controller, Get, Body, Put } from '@nestjs/common';
-import { SettingsService } from './settings.service';
-import { UpdateSettingDto } from './dto/update-setting.dto';
+import { SettingsService } from './settings.service.js';
+import { UpdateSettingDto } from './dto/update-setting.dto.js';
 
 @Controller('settings')
 export class SettingsController {

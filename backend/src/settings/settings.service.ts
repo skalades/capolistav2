@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; // Assuming there is a prisma service
-import { UpdateSettingDto } from './dto/update-setting.dto';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { UpdateSettingDto } from './dto/update-setting.dto.js';
 
 @Injectable()
 export class SettingsService {

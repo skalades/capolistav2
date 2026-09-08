@@ -14,7 +14,7 @@ export default function ProduksiOverviewPage() {
     // Simulasi fetch semua order atau kita bisa fetch per divisi jika endpoint all orders belum ada
     const fetchAllOrders = async () => {
       try {
-        const res = await fetch("http://localhost:3000/orders")
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders`)
         if (res.ok) {
           const data = await res.json()
           setOrders(data)

@@ -5,6 +5,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Topbar } from "@/components/layout/Topbar"
 import { Button } from "@/components/ui/Button"
+import { CurrencyInput } from "@/components/ui/CurrencyInput"
 import { ArrowLeft, Save, Upload } from "lucide-react"
 
 export default function NewOrderPage() {
@@ -47,7 +48,7 @@ export default function NewOrderPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/orders", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -66,10 +67,10 @@ export default function NewOrderPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-capo-bg">
+    <div className="flex-1 flex flex-col h-full bg-capo-bg">
       <Topbar title="Input Order Baru" />
       
-      <main className="flex-1 p-6">
+      <main className="flex-1 overflow-auto p-6">
         <div className="max-w-4xl mx-auto space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             
@@ -141,11 +142,11 @@ export default function NewOrderPage() {
                 <div className="space-y-3">
                   <div className="space-y-1.5">
                     <label className="text-[11.5px] font-medium text-capo-ink-soft uppercase tracking-wider">Total Harga (Rp)</label>
-                    <input type="number" min="0" required value={formData.totalHarga} onChange={(e) => setFormData({...formData, totalHarga: e.target.valueAsNumber})} className="w-full p-2.5 text-[14px] font-mono rounded-md border border-capo-line bg-white focus:outline-none focus:ring-2 focus:ring-capo-accent/50" placeholder="0" />
+                    <CurrencyInput required value={formData.totalHarga} onChange={(val) => setFormData({...formData, totalHarga: val})} className="w-full p-2.5 text-[14px] font-mono rounded-md border border-capo-line bg-white focus:outline-none focus:ring-2 focus:ring-capo-accent/50" placeholder="0" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[11.5px] font-medium text-capo-ink-soft uppercase tracking-wider">Uang Muka / DP (Rp)</label>
-                    <input type="number" min="0" required value={formData.dp} onChange={(e) => setFormData({...formData, dp: e.target.valueAsNumber})} className="w-full p-2.5 text-[14px] font-mono rounded-md border border-capo-line bg-white focus:outline-none focus:ring-2 focus:ring-capo-accent/50" placeholder="0" />
+                    <CurrencyInput required value={formData.dp} onChange={(val) => setFormData({...formData, dp: val})} className="w-full p-2.5 text-[14px] font-mono rounded-md border border-capo-line bg-white focus:outline-none focus:ring-2 focus:ring-capo-accent/50" placeholder="0" />
                   </div>
                 </div>
               </section>

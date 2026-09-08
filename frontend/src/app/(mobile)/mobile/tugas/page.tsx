@@ -13,7 +13,7 @@ export default function MobileTugasPage() {
 
   const fetchTasks = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/hr/mobile-tasks/${operatorId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/hr/mobile-tasks/${operatorId}`);
       const json = await res.json();
       setData(json);
     } catch (err) {
@@ -28,7 +28,7 @@ export default function MobileTugasPage() {
   const handleSubmitOutput = async () => {
     if (!data?.activeTask || !pcsInput) return;
     try {
-      await fetch("http://localhost:3000/hr/submit-output", {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/hr/submit-output`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

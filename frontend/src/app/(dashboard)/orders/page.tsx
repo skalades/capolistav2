@@ -17,7 +17,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
   
   useEffect(() => {
-    fetch("http://localhost:3000/orders")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders`)
       .then(res => res.json())
       .then(data => {
         setOrders(data)

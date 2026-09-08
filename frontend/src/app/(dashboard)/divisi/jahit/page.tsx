@@ -4,6 +4,8 @@ import * as React from "react"
 import { Topbar } from "@/components/layout/Topbar"
 import { KanbanBoard, KanbanColumn, KanbanCard, KanbanCardType } from "@/components/ui/KanbanBoard"
 import { Button } from "@/components/ui/Button"
+import { Modal } from "@/components/ui/Modal"
+import { CurrencyInput } from "@/components/ui/CurrencyInput"
 import { CheckSquare, Send, User, X } from "lucide-react"
 
 const STAGES = ["Menunggu", "Sedang Dijahit", "QC", "Selesai"]
@@ -15,7 +17,7 @@ export default function JahitPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch("http://localhost:3000/production/board/JAHIT")
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/board/JAHIT`)
       const data = await res.json()
       const formatted = data.map((order: any) => {
         const totalPcs = order.items.reduce((acc: number, item: any) => acc + item.jumlahPcs, 0)
@@ -33,7 +35,7 @@ export default function JahitPage() {
           orderId: order.noOrder,
           customer: order.customer?.nama || "Unknown",
           product,
-          stage: order.subStatus || "Menunggu",
+          stage: STAGES.includes(order.subStatus) ? order.subStatus : "Menunggu",
           deadline: order.deadline ? new Date(order.deadline).toLocaleDateString('id-ID') : "",
           metadata: { 
             Items: `${order.items.length} tipe`,
@@ -49,7 +51,7 @@ export default function JahitPage() {
 
   const fetchOperators = async () => {
     try {
-      const res = await fetch("http://localhost:3000/hr/operators/JAHIT")
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/hr/operators/JAHIT`)
       const data = await res.json()
       setOperators(data)
     } catch (err) {
@@ -65,7 +67,7 @@ export default function JahitPage() {
   const handleUpdateSubStatus = async (newStage: string) => {
     if (!activeCard) return
     try {
-      await fetch(`http://localhost:3000/production/order/${activeCard.id}/substatus`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/order/${activeCard.id}/substatus`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subStatus: newStage })
@@ -80,7 +82,7 @@ export default function JahitPage() {
   const handleNextStage = async () => {
     if (!activeCard) return
     try {
-      await fetch(`http://localhost:3000/production/order/${activeCard.id}/next-stage`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/order/${activeCard.id}/next-stage`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ skipPrinting: false })
@@ -164,7 +166,7 @@ export default function JahitPage() {
                     if (!opId || !tarif) return;
                     
                     try {
-                      await fetch("http://localhost:3000/hr/assign-operator", {
+                      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/hr/assign-operator`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -186,7 +188,7 @@ export default function JahitPage() {
                       <option key={op.id} value={op.id}>{op.nama}</option>
                     ))}
                   </select>
-                  <input type="number" name="tarif" required placeholder="Tarif per Pcs (Rp)" className="w-full text-[12px] p-2 border border-capo-line rounded focus:outline-none focus:ring-1 focus:ring-capo-navy" />
+                  <CurrencyInput name="tarif" required placeholder="Tarif per Pcs (Rp)" className="w-full text-[12px] p-2 border border-capo-line rounded focus:outline-none focus:ring-1 focus:ring-capo-navy" />
                   <Button type="submit" size="sm" className="w-full">Tugaskan</Button>
                 </form>
               </div>

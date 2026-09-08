@@ -27,7 +27,7 @@ export default function OrderDetailPage() {
 
   const fetchOrder = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/orders/${orderId}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders/${orderId}`)
       if (res.ok) {
         const data = await res.json()
         setOrder(data)
@@ -47,7 +47,7 @@ export default function OrderDetailPage() {
   const handleUpdateStatus = async () => {
     setIsSubmitting(true)
     try {
-      await fetch(`http://localhost:3000/orders/${order.id}/status`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders/${order.id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: selectedStatus, catatan: catatanStatus })
@@ -65,7 +65,7 @@ export default function OrderDetailPage() {
     if (!chatMessage.trim()) return
     setIsSubmitting(true)
     try {
-      await fetch(`http://localhost:3000/orders/${order.id}/logs`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders/${order.id}/logs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: chatMessage })

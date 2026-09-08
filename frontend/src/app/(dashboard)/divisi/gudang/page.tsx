@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { KpiCard } from '@/components/ui/KpiCard';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}`}`;
 
 export default function GudangPage() {
   const [bahan, setBahan] = useState([]);
@@ -60,7 +60,7 @@ export default function GudangPage() {
       <div className="p-6 space-y-6 flex-1">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <KpiCard title="Total Jenis Bahan" value={totalBahan.toString()} />
-          <KpiCard title="Stok Menipis" value={menipisCount.toString()} trend="down" trendValue="Perlu Restock" />
+          <KpiCard title="Stok Menipis" value={menipisCount.toString()} status="danger" caption="Perlu Restock" />
         </div>
 
         <div className="flex items-center justify-between">

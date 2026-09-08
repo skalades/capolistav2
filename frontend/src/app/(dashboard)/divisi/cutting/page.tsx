@@ -25,7 +25,7 @@ export default function CuttingPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch("http://localhost:3000/production/board/CUTTING")
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/board/CUTTING`)
       const data = await res.json()
       const formatted = data.map((order: any) => {
         const totalPcs = order.items.reduce((acc: number, item: any) => acc + item.jumlahPcs, 0)
@@ -35,7 +35,7 @@ export default function CuttingPage() {
           orderId: order.noOrder,
           customer: order.customer?.nama || "Unknown",
           product,
-          stage: order.subStatus || "Menunggu",
+          stage: STAGES.includes(order.subStatus) ? order.subStatus : "Menunggu",
           deadline: order.deadline ? new Date(order.deadline).toLocaleDateString('id-ID') : "",
           metadata: { Items: `${order.items.length} tipe` }
         }
@@ -48,7 +48,7 @@ export default function CuttingPage() {
 
   const fetchOperators = async () => {
     try {
-      const res = await fetch("http://localhost:3000/hr/operators/CUTTING")
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/hr/operators/CUTTING`)
       const data = await res.json()
       setOperators(data)
     } catch (err) {
@@ -63,7 +63,7 @@ export default function CuttingPage() {
 
   React.useEffect(() => {
     if (activeCard) {
-      fetch(`http://localhost:3000/production/cutting/${activeCard.id}`)
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/cutting/${activeCard.id}`)
         .then(res => res.json())
         .then(data => {
           setCuttingData(data)
@@ -80,7 +80,7 @@ export default function CuttingPage() {
   const handleUpdateSubStatus = async (newStage: string) => {
     if (!activeCard) return
     try {
-      await fetch(`http://localhost:3000/production/order/${activeCard.id}/substatus`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/order/${activeCard.id}/substatus`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subStatus: newStage })
@@ -95,7 +95,7 @@ export default function CuttingPage() {
   const handleNextStage = async () => {
     if (!activeCard) return
     try {
-      await fetch(`http://localhost:3000/production/order/${activeCard.id}/next-stage`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/order/${activeCard.id}/next-stage`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ skipPrinting: false })
@@ -119,7 +119,7 @@ export default function CuttingPage() {
         parsedPcs = { info: pcsInfo }
       }
 
-      await fetch(`http://localhost:3000/production/cutting/${activeCard.id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/cutting/${activeCard.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -129,7 +129,7 @@ export default function CuttingPage() {
         })
       })
       
-      const res = await fetch(`http://localhost:3000/production/cutting/${activeCard.id}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/cutting/${activeCard.id}`)
       const data = await res.json()
       setCuttingData(data)
       alert("Data pemotongan berhasil disimpan")

@@ -26,7 +26,10 @@ export class FinanceService {
     const po = await this.prisma.purchaseOrder.aggregate({
       _sum: { totalHarga: true }
     });
-    const totalPengeluaran = Number(gaji._sum.totalUpahBersih || 0) + Number(po._sum.totalHarga || 0);
+    const ops = await this.prisma.pengeluaranOperasional.aggregate({
+      _sum: { jumlah: true }
+    });
+    const totalPengeluaran = Number(gaji._sum.totalUpahBersih || 0) + Number(po._sum.totalHarga || 0) + Number(ops._sum.jumlah || 0);
 
     return {
       totalPemasukan,
@@ -34,6 +37,23 @@ export class FinanceService {
       totalPengeluaran,
       totalOrderMenungguDp: waitingDP
     };
+  }
+
+  async findAllPengeluaran() {
+    return this.prisma.pengeluaranOperasional.findMany({
+      orderBy: { tanggal: 'desc' }
+    });
+  }
+
+  async createPengeluaran(data: any) {
+    return this.prisma.pengeluaranOperasional.create({
+      data: {
+        keterangan: data.keterangan,
+        kategori: data.kategori || "Umum",
+        jumlah: data.jumlah,
+        tanggal: data.tanggal ? new Date(data.tanggal) : new Date(),
+      }
+    });
   }
 
   async findAllPayments() {

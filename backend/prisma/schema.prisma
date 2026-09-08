@@ -379,3 +379,15 @@ model PengeluaranOperasional {
   updatedAt    DateTime @updatedAt
 }
 
+
+model SystemSetting {
+  id              Int      @id @default(1)
+  logoUrl         String?
+  companyName     String?  @default("Capolista")
+  address         String?  @db.Text
+  bankAccount     String?  @db.Text
+  receiptNote     String?  @db.Text
+  invoiceNote     String?  @db.Text
+  updatedAt       DateTime @updatedAt
+}
+

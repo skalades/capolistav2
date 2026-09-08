@@ -8,9 +8,10 @@ import { ProductionModule } from './production/production.module.js';
 import { HrModule } from './hr/hr.module.js';
 import { InventoryModule } from './inventory/inventory.module.js';
 import { FinanceModule } from './finance/finance.module.js';
+import { SettingsModule } from './settings/settings.module.js';
 
 @Module({
-  imports: [AuthModule, UsersModule, OrdersModule, ProductionModule, HrModule, InventoryModule, FinanceModule],
+  imports: [AuthModule, UsersModule, OrdersModule, ProductionModule, HrModule, InventoryModule, FinanceModule, SettingsModule],
   controllers: [AppController],
   providers: [AppService],
 })

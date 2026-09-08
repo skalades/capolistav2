@@ -21,7 +21,8 @@ import {
   Banknote,
   FileEdit,
   Box,
-  Truck
+  Truck,
+  Settings
 } from "lucide-react"
 
 const sidebarNav = [
@@ -55,6 +56,7 @@ const sidebarNav = [
       { title: "Penggajian", href: "/hr/penggajian", icon: Banknote },
       { title: "Laporan & Analitik", href: "/laporan", icon: BarChart3 },
       { title: "Pengguna & Akses", href: "/sistem/pengguna", icon: Users },
+      { title: "Pengaturan Sistem", href: "/sistem/pengaturan", icon: Settings },
     ]
   }
 ]

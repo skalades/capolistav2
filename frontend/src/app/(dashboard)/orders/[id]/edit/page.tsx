@@ -21,12 +21,26 @@ export default function EditOrderPage() {
     alamatCustomer: "",
     jenisProduk: "",
     deadline: "",
+    hargaSatuan: 0,
     totalHarga: 0,
     dp: 0,
     catatan: ""
   })
   
   const [sizes, setSizes] = React.useState<Record<string, number | string>>({ S: 0, M: 0, L: 0, XL: 0, XXL: 0 })
+
+  const handleHargaSatuanChange = (val: string | number) => {
+    const num = Number(val) || 0
+    const totalPcs = Object.values(sizes).reduce((acc, curr) => acc + (Number(curr) || 0), 0)
+    setFormData(prev => ({ ...prev, hargaSatuan: num, totalHarga: totalPcs * num }))
+  }
+
+  const handleSizeChange = (sz: string, val: string) => {
+    const newSizes = { ...sizes, [sz]: val }
+    setSizes(newSizes)
+    const totalPcs = Object.values(newSizes).reduce((acc, curr) => acc + (Number(curr) || 0), 0)
+    setFormData(prev => ({ ...prev, totalHarga: totalPcs * prev.hargaSatuan }))
+  }
 
   React.useEffect(() => {
     const fetchOrder = async () => {
@@ -50,13 +64,21 @@ export default function EditOrderPage() {
           })
           
           if (data.items && data.items.length > 0) {
+            let totalPcs = 0
             const newSizes = { S: 0, M: 0, L: 0, XL: 0, XXL: 0 } as Record<string, number>
             data.items.forEach((item: any) => {
               if (item.ukuran in newSizes) {
                 newSizes[item.ukuran] = Number(item.jumlahPcs)
+                totalPcs += Number(item.jumlahPcs)
               }
             })
             setSizes(newSizes)
+            
+            // Auto calculate harga satuan based on totalHarga and totalPcs
+            const parsedTotal = Number(data.totalHarga) || 0
+            if (totalPcs > 0 && parsedTotal > 0) {
+              setFormData(prev => ({ ...prev, hargaSatuan: Math.round(parsedTotal / totalPcs) }))
+            }
           }
         }
       } catch (err) {
@@ -173,7 +195,7 @@ export default function EditOrderPage() {
                   {Object.entries(sizes).map(([sz, val]) => (
                     <div key={sz} className="flex items-center space-x-2">
                       <span className="w-8 font-mono text-[13px] font-semibold text-capo-ink">{sz}</span>
-                      <input type="number" min="0" value={val} onChange={(e) => setSizes({...sizes, [sz]: e.target.value})} className="w-full p-2 text-[12.5px] text-center rounded-md border border-capo-line bg-white font-mono focus:outline-none focus:ring-2 focus:ring-capo-accent/50" />
+                      <input type="number" min="0" value={val} onChange={(e) => handleSizeChange(sz, e.target.value)} className="w-full p-2 text-[12.5px] text-center rounded-md border border-capo-line bg-white font-mono focus:outline-none focus:ring-2 focus:ring-capo-accent/50" />
                     </div>
                   ))}
                 </div>
@@ -186,8 +208,13 @@ export default function EditOrderPage() {
                 <h2 className="font-oswald text-lg font-semibold text-capo-ink border-b border-capo-line pb-2">PEMBAYARAN</h2>
                 <div className="space-y-3">
                   <div className="space-y-1.5">
+                    <label className="text-[11.5px] font-medium text-capo-ink-soft uppercase tracking-wider">Harga Satuan (Rp)</label>
+                    <CurrencyInput value={formData.hargaSatuan} onChange={handleHargaSatuanChange} className="w-full p-2.5 text-[14px] font-mono rounded-md border border-capo-line bg-white focus:outline-none focus:ring-2 focus:ring-capo-accent/50" />
+                  </div>
+                  <div className="space-y-1.5">
                     <label className="text-[11.5px] font-medium text-capo-ink-soft uppercase tracking-wider">Total Harga (Rp)</label>
-                    <CurrencyInput value={formData.totalHarga} onChange={(val) => setFormData({...formData, totalHarga: Number(val)})} className="w-full p-2.5 text-[14px] font-mono rounded-md border border-capo-line bg-white focus:outline-none focus:ring-2 focus:ring-capo-accent/50" />
+                    <CurrencyInput value={formData.totalHarga} onChange={(val) => setFormData({...formData, totalHarga: Number(val)})} className="w-full p-2.5 text-[14px] font-mono rounded-md border-capo-line bg-gray-50 focus:outline-none" />
+                    <p className="text-[10px] text-capo-ink-soft">Dihitung otomatis dari Jumlah Pcs x Harga Satuan (Bisa diubah manual)</p>
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[11.5px] font-medium text-capo-ink-soft uppercase tracking-wider">Uang Muka / DP (Rp)</label>

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Topbar } from "@/components/layout/Topbar"
 import { Button } from "@/components/ui/Button"
@@ -17,12 +17,26 @@ export default function NewOrderPage() {
     alamatCustomer: "",
     jenisProduk: "",
     deadline: "",
+    hargaSatuan: 0,
     totalHarga: 0,
     dp: 0,
   })
 
   const [sizes, setSizes] = useState({ S: 0, M: 0, L: 0, XL: 0, XXL: 0 })
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleHargaSatuanChange = (val: string | number) => {
+    const num = Number(val) || 0
+    const totalPcs = Object.values(sizes).reduce((acc, curr) => acc + (Number(curr) || 0), 0)
+    setFormData(prev => ({ ...prev, hargaSatuan: num, totalHarga: totalPcs * num }))
+  }
+
+  const handleSizeChange = (sz: string, val: string) => {
+    const newSizes = { ...sizes, [sz]: val }
+    setSizes(newSizes)
+    const totalPcs = Object.values(newSizes).reduce((acc, curr) => acc + (Number(curr) || 0), 0)
+    setFormData(prev => ({ ...prev, totalHarga: totalPcs * prev.hargaSatuan }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -128,7 +142,7 @@ export default function NewOrderPage() {
                   {Object.entries(sizes).map(([sz, val]) => (
                     <div key={sz} className="flex items-center space-x-2">
                       <span className="w-8 font-mono text-[13px] font-semibold text-capo-ink">{sz}</span>
-                      <input type="number" min="0" value={val} onChange={(e) => setSizes({...sizes, [sz]: e.target.value})} className="w-full p-2 text-[12.5px] text-center rounded-md border border-capo-line bg-white font-mono focus:outline-none focus:ring-2 focus:ring-capo-accent/50" />
+                      <input type="number" min="0" value={val} onChange={(e) => handleSizeChange(sz, e.target.value)} className="w-full p-2 text-[12.5px] text-center rounded-md border border-capo-line bg-white font-mono focus:outline-none focus:ring-2 focus:ring-capo-accent/50" />
                     </div>
                   ))}
                 </div>
@@ -141,8 +155,13 @@ export default function NewOrderPage() {
                 <h2 className="font-oswald text-lg font-semibold text-capo-ink border-b border-capo-line pb-2">PEMBAYARAN</h2>
                 <div className="space-y-3">
                   <div className="space-y-1.5">
+                    <label className="text-[11.5px] font-medium text-capo-ink-soft uppercase tracking-wider">Harga Satuan (Rp)</label>
+                    <CurrencyInput required value={formData.hargaSatuan} onChange={handleHargaSatuanChange} className="w-full p-2.5 text-[14px] font-mono rounded-md border border-capo-line bg-white focus:outline-none focus:ring-2 focus:ring-capo-accent/50" placeholder="0" />
+                  </div>
+                  <div className="space-y-1.5">
                     <label className="text-[11.5px] font-medium text-capo-ink-soft uppercase tracking-wider">Total Harga (Rp)</label>
-                    <CurrencyInput required value={formData.totalHarga} onChange={(val) => setFormData({...formData, totalHarga: Number(val) || 0})} className="w-full p-2.5 text-[14px] font-mono rounded-md border border-capo-line bg-white focus:outline-none focus:ring-2 focus:ring-capo-accent/50" placeholder="0" />
+                    <CurrencyInput required value={formData.totalHarga} onChange={(val) => setFormData({...formData, totalHarga: Number(val) || 0})} className="w-full p-2.5 text-[14px] font-mono rounded-md border-capo-line bg-gray-50 focus:outline-none" placeholder="0" />
+                    <p className="text-[10px] text-capo-ink-soft">Dihitung otomatis dari Jumlah Pcs x Harga Satuan (Bisa diubah manual)</p>
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[11.5px] font-medium text-capo-ink-soft uppercase tracking-wider">Uang Muka / DP (Rp)</label>

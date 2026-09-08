@@ -15,6 +15,8 @@ const badgeVariants = cva(
           "bg-capo-gold/10 text-capo-gold",
         danger:
           "bg-capo-danger/10 text-capo-danger",
+        secondary:
+          "bg-gray-100 text-gray-800",
         neutral:
           "bg-capo-line/20 text-capo-ink-soft",
       },
@@ -32,6 +34,7 @@ const dotVariants = cva("w-1.5 h-1.5 rounded-full", {
       success: "bg-capo-accent",
       warning: "bg-capo-gold",
       danger: "bg-capo-danger",
+      secondary: "bg-gray-500",
       neutral: "bg-capo-ink-soft",
     },
   },

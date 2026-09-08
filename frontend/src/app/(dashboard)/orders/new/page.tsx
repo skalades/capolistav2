@@ -142,11 +142,11 @@ export default function NewOrderPage() {
                 <div className="space-y-3">
                   <div className="space-y-1.5">
                     <label className="text-[11.5px] font-medium text-capo-ink-soft uppercase tracking-wider">Total Harga (Rp)</label>
-                    <CurrencyInput required value={formData.totalHarga} onChange={(val) => setFormData({...formData, totalHarga: val})} className="w-full p-2.5 text-[14px] font-mono rounded-md border border-capo-line bg-white focus:outline-none focus:ring-2 focus:ring-capo-accent/50" placeholder="0" />
+                    <CurrencyInput required value={formData.totalHarga} onChange={(val) => setFormData({...formData, totalHarga: Number(val) || 0})} className="w-full p-2.5 text-[14px] font-mono rounded-md border border-capo-line bg-white focus:outline-none focus:ring-2 focus:ring-capo-accent/50" placeholder="0" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[11.5px] font-medium text-capo-ink-soft uppercase tracking-wider">Uang Muka / DP (Rp)</label>
-                    <CurrencyInput required value={formData.dp} onChange={(val) => setFormData({...formData, dp: val})} className="w-full p-2.5 text-[14px] font-mono rounded-md border border-capo-line bg-white focus:outline-none focus:ring-2 focus:ring-capo-accent/50" placeholder="0" />
+                    <CurrencyInput required value={formData.dp} onChange={(val) => setFormData({...formData, dp: Number(val) || 0})} className="w-full p-2.5 text-[14px] font-mono rounded-md border border-capo-line bg-white focus:outline-none focus:ring-2 focus:ring-capo-accent/50" placeholder="0" />
                   </div>
                 </div>
               </section>

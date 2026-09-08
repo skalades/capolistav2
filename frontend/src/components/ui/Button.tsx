@@ -15,6 +15,12 @@ const buttonVariants = cva(
           "bg-capo-accent text-white hover:bg-capo-accent/90 shadow-sm",
         danger:
           "bg-capo-danger text-white hover:bg-capo-danger/90 shadow-sm", // Only for real problems
+        success:
+          "bg-green-600 text-white hover:bg-green-700 shadow-sm",
+        primary:
+          "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
+        outline:
+          "border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-100",
         ghost: "hover:bg-capo-line/20 text-capo-ink",
         link: "text-capo-navy underline-offset-4 hover:underline",
       },

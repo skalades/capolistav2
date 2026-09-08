@@ -63,15 +63,14 @@ export default function LoginPage() {
           <div className="absolute bottom-0 right-0 w-2 h-2 bg-capo-ink" />
 
           <div className="text-center mb-8">
-            {logoUrl ? (
+            {logoUrl && (
               <div className="flex justify-center mb-4">
                 <img src={getFullLogoUrl(logoUrl)} alt={companyName} className="max-h-24 object-contain" />
               </div>
-            ) : (
-              <h1 className="font-oswald text-4xl text-capo-ink uppercase tracking-tight mb-1">
-                {companyName}
-              </h1>
             )}
+            <h1 className="font-oswald text-4xl text-capo-ink uppercase tracking-tight mb-1">
+              {companyName}
+            </h1>
             <p className="font-mono text-xs text-capo-ink-soft mb-4">
               AUTHORIZATION REQUIRED
             </p>

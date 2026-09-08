@@ -140,6 +140,34 @@ export class OrdersService {
     return order;
   }
 
+  async trackOrderByNo(noOrder: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { noOrder },
+      include: {
+        customer: { select: { nama: true } }, // hanya nama untuk privasi
+        items: true,
+        logs: {
+          select: {
+            id: true,
+            type: true,
+            title: true,
+            desc: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'asc' }
+        }
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException('Order tidak ditemukan');
+    }
+    
+    // Sembunyikan informasi harga detail dari customer jika diperlukan, tapi totalHarga mungkin perlu.
+    // Di sini kita return semua field utama order, items, logs, dan nama customer.
+    return order;
+  }
+
   async update(id: number, updateOrderDto: any) {
     const order = await this.findOne(id);
     const { items, ...orderData } = updateOrderDto;

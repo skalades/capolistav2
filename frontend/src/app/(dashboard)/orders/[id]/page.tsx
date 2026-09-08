@@ -106,7 +106,21 @@ export default function OrderDetailPage() {
               </h1>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders/${order.id}/invoice`, '_blank')}
+              >
+                <Printer className="w-4 h-4 mr-2" /> Invoice
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders/${order.id}/receipt`, '_blank')}
+              >
+                <Printer className="w-4 h-4 mr-2" /> Kwitansi
+              </Button>
               <Link href={`/orders/${order.id}/edit`}>
                 <Button variant="outline" size="sm">
                   <Edit className="w-4 h-4 mr-2" /> Edit

@@ -4,9 +4,10 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const isLoginPage = request.nextUrl.pathname === '/login';
+  const isPublicPage = isLoginPage || request.nextUrl.pathname.startsWith('/track');
 
-  // Protect all routes except login and static assets
-  if (!token && !isLoginPage) {
+  // Protect all routes except public pages and static assets
+  if (!token && !isPublicPage) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 

@@ -8,8 +8,11 @@ import {
   Param,
   Patch,
   Delete,
+  Res,
+  Query,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service.js';
+import { OrdersPdfService } from './orders-pdf.service.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import { UpdateOrderDto } from './dto/update-order.dto.js';
 import { StatusOrder } from '@prisma/client';
@@ -20,7 +23,10 @@ import { StatusOrder } from '@prisma/client';
 @Controller('orders')
 // @UseGuards(JwtAuthGuard, RolesGuard)
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly ordersPdfService: OrdersPdfService,
+  ) {}
 
   @Post()
   // @Roles(Role.SUPERADMIN, Role.OWNER, Role.ADMIN, Role.PEMASARAN)
@@ -32,6 +38,11 @@ export class OrdersController {
   @Get()
   async findAll() {
     return await this.ordersService.findAllOrders();
+  }
+
+  @Get('track/:noOrder')
+  async trackOrder(@Param('noOrder') noOrder: string) {
+    return await this.ordersService.trackOrderByNo(noOrder);
   }
 
   @Get(':id')
@@ -72,4 +83,20 @@ export class OrdersController {
     const userId = req.user?.id || null;
     return await this.ordersService.addChatLog(+id, message, userId);
   }
+
+  @Get(':id/invoice')
+  async downloadInvoice(@Param('id') id: string, @Res() res: any) {
+    return await this.ordersPdfService.generateInvoice(+id, res);
+  }
+
+  @Get(':id/receipt')
+  async downloadReceipt(
+    @Param('id') id: string, 
+    @Query('paymentId') paymentId: string, 
+    @Res() res: any
+  ) {
+    return await this.ordersPdfService.generateReceipt(+id, res, paymentId ? +paymentId : undefined);
+  }
 }
+
+

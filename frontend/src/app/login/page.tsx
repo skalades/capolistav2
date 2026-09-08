@@ -134,10 +134,18 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-capo-line text-center">
+          <div className="mt-8 pt-6 border-t border-capo-line text-center space-y-4">
             <p className="font-mono text-[10px] text-capo-ink-soft">
               SECURE CONNECTION ESTABLISHED
             </p>
+            <div className="pt-2">
+              <a 
+                href="/track" 
+                className="font-sans text-sm font-medium text-capo-navy hover:text-capo-accent transition-colors underline underline-offset-4"
+              >
+                Customer? Lacak Pesanan Anda di sini &rarr;
+              </a>
+            </div>
           </div>
         </div>
       </div>

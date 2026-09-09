@@ -12,7 +12,7 @@ export function StafDashboard({ user }: { user: any }) {
           onClick={async () => {
             const { logoutUser } = await import("@/app/actions/auth")
             await logoutUser()
-            window.location.href = "/login"
+            window.location.href = "/"
           }}
           className="text-capo-danger hover:text-red-400 p-2"
           title="Logout"

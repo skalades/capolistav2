@@ -31,14 +31,14 @@ export default function EditOrderPage() {
 
   const handleHargaSatuanChange = (val: string | number) => {
     const num = Number(val) || 0
-    const totalPcs = Object.values(sizes).reduce((acc, curr) => acc + (Number(curr) || 0), 0)
+    const totalPcs = Object.values(sizes).reduce<number>((acc, curr) => acc + (Number(curr) || 0), 0)
     setFormData(prev => ({ ...prev, hargaSatuan: num, totalHarga: totalPcs * num }))
   }
 
   const handleSizeChange = (sz: string, val: string) => {
     const newSizes = { ...sizes, [sz]: val }
     setSizes(newSizes)
-    const totalPcs = Object.values(newSizes).reduce((acc, curr) => acc + (Number(curr) || 0), 0)
+    const totalPcs = Object.values(newSizes).reduce<number>((acc, curr) => acc + (Number(curr) || 0), 0)
     setFormData(prev => ({ ...prev, totalHarga: totalPcs * prev.hargaSatuan }))
   }
 
@@ -58,6 +58,7 @@ export default function EditOrderPage() {
             alamatCustomer: data.customer?.alamat || "",
             jenisProduk: data.items?.[0]?.jenisProduk || "Kaus Sablon",
             deadline: deadlineDate,
+            hargaSatuan: 0,
             totalHarga: Number(data.totalHarga) || 0,
             dp: Number(data.dp) || 0,
             catatan: ""

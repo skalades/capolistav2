@@ -1,5 +1,7 @@
 "use client"
 
+import { API } from '@/lib/api';
+
 import * as React from "react"
 import { Topbar } from "@/components/layout/Topbar"
 import { KanbanBoard, KanbanColumn, KanbanCard, KanbanCardType } from "@/components/ui/KanbanBoard"
@@ -22,7 +24,7 @@ export default function PrintingPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/board/PRINTING`)
+      const res = await fetch(`${API}/production/board/PRINTING`)
       const data = await res.json()
       const formatted = data.map((order: any) => {
         const totalPcs = order.items.reduce((acc: number, item: any) => acc + item.jumlahPcs, 0)
@@ -49,7 +51,7 @@ export default function PrintingPage() {
 
   React.useEffect(() => {
     if (activeCard) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/printing/${activeCard.id}`)
+      fetch(`${API}/production/printing/${activeCard.id}`)
         .then(res => res.json())
         .then(data => {
           setPrintingData(data)
@@ -65,7 +67,7 @@ export default function PrintingPage() {
   const handleUpdateSubStatus = async (newStage: string) => {
     if (!activeCard) return
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/order/${activeCard.id}/substatus`, {
+      await fetch(`${API}/production/order/${activeCard.id}/substatus`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subStatus: newStage })
@@ -80,7 +82,7 @@ export default function PrintingPage() {
   const handleNextStage = async () => {
     if (!activeCard) return
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/order/${activeCard.id}/next-stage`, {
+      await fetch(`${API}/production/order/${activeCard.id}/next-stage`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" }
       })
@@ -95,7 +97,7 @@ export default function PrintingPage() {
     if (!activeCard) return
     setIsUpdating(true)
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/printing/${activeCard.id}`, {
+      await fetch(`${API}/production/printing/${activeCard.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -104,7 +106,7 @@ export default function PrintingPage() {
         })
       })
       
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/printing/${activeCard.id}`)
+      const res = await fetch(`${API}/production/printing/${activeCard.id}`)
       const data = await res.json()
       setPrintingData(data)
       alert("Data printing berhasil disimpan")

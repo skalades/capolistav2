@@ -7,17 +7,21 @@ import { Button } from "@/components/ui/Button"
 import { Modal } from "@/components/ui/Modal"
 import { CurrencyInput } from "@/components/ui/CurrencyInput"
 import { CheckSquare, Send, User, X } from "lucide-react"
+import { API } from "@/lib/api"
 
 const STAGES = ["Menunggu", "Sedang Dijahit", "QC", "Selesai"]
+
 
 export default function JahitPage() {
   const [activeCard, setActiveCard] = React.useState<KanbanCardType | null>(null)
   const [orders, setOrders] = React.useState<KanbanCardType[]>([])
   const [operators, setOperators] = React.useState<any[]>([])
+  const [orderLogs, setOrderLogs] = React.useState<any[]>([])
+  const [noteInput, setNoteInput] = React.useState('')
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/board/JAHIT`)
+      const res = await fetch(`${API}/production/board/JAHIT`)
       const data = await res.json()
       const formatted = data.map((order: any) => {
         const totalPcs = order.items.reduce((acc: number, item: any) => acc + item.jumlahPcs, 0)
@@ -51,11 +55,41 @@ export default function JahitPage() {
 
   const fetchOperators = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/hr/operators/JAHIT`)
+      const res = await fetch(`${API}/hr/operators/JAHIT`)
       const data = await res.json()
       setOperators(data)
     } catch (err) {
       console.error("Failed to fetch operators", err)
+    }
+  }
+
+  const fetchLogs = async (orderId: string) => {
+    try {
+      const res = await fetch(`${API}/orders/${orderId}/logs`)
+      if (res.ok) setOrderLogs(await res.json())
+    } catch (err) {
+      console.error("Failed to fetch logs", err)
+    }
+  }
+
+  const handleCardClick = (card: KanbanCardType) => {
+    setActiveCard(card)
+    setOrderLogs([])
+    fetchLogs(card.id)
+  }
+
+  const handleSendNote = async () => {
+    if (!activeCard || !noteInput.trim()) return
+    try {
+      await fetch(`${API}/orders/${activeCard.id}/logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'CATATAN', title: 'Catatan Divisi Jahit', desc: noteInput.trim() }),
+      })
+      setNoteInput('')
+      fetchLogs(activeCard.id)
+    } catch (err) {
+      console.error("Failed to send note", err)
     }
   }
 
@@ -64,10 +98,11 @@ export default function JahitPage() {
     fetchOperators()
   }, [])
 
+
   const handleUpdateSubStatus = async (newStage: string) => {
     if (!activeCard) return
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/order/${activeCard.id}/substatus`, {
+      await fetch(`${API}/production/order/${activeCard.id}/substatus`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subStatus: newStage })
@@ -82,7 +117,7 @@ export default function JahitPage() {
   const handleNextStage = async () => {
     if (!activeCard) return
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/production/order/${activeCard.id}/next-stage`, {
+      await fetch(`${API}/production/order/${activeCard.id}/next-stage`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ skipPrinting: false })
@@ -108,7 +143,7 @@ export default function JahitPage() {
             stages={STAGES} 
             orders={orders} 
             activeCardId={activeCard?.id} 
-            onCardClick={setActiveCard} 
+            onCardClick={handleCardClick} 
           />
         </div>
 
@@ -166,7 +201,7 @@ export default function JahitPage() {
                     if (!opId || !tarif) return;
                     
                     try {
-                      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/hr/assign-operator`, {
+                      await fetch(`${API}/hr/assign-operator`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -215,9 +250,54 @@ export default function JahitPage() {
               <div className="border-t border-capo-line pt-4">
                 <h4 className="text-[11.5px] font-semibold text-capo-ink-soft uppercase tracking-wider mb-2">Aksi Lintas Divisi</h4>
                 <div className="flex gap-2">
-                  <Button variant="accent" className="flex-1" onClick={handleNextStage}>Kirim ke Printing</Button>
+                  <Button variant="accent" className="flex-1" onClick={handleNextStage}>Kirim ke Packing</Button>
                 </div>
               </div>
+
+              {/* ── Riwayat Komunikasi (DS §4.6) ── */}
+              <div className="border-t border-capo-line pt-4">
+                <h4 className="text-[11.5px] font-semibold text-capo-ink-soft uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Send className="w-3.5 h-3.5" /> Riwayat Komunikasi
+                </h4>
+
+                {/* Timeline */}
+                <div className="space-y-3 mb-4 max-h-[200px] overflow-y-auto custom-scrollbar">
+                  {orderLogs.length === 0 ? (
+                    <p className="text-[11.5px] text-capo-ink-soft italic text-center py-4">
+                      Belum ada catatan untuk order ini.
+                    </p>
+                  ) : (
+                    orderLogs.map((log: any, i: number) => (
+                      <div key={i} className="flex gap-3">
+                        <div className="w-2 h-2 rounded-full bg-capo-navy mt-1.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[12px] font-medium text-capo-ink">{log.title}</p>
+                          <p className="text-[11.5px] text-capo-ink-soft mt-0.5">{log.desc}</p>
+                          <p className="text-[10.5px] text-capo-ink-soft/70 mt-0.5">
+                            {log.user?.nama || 'Sistem'} · {new Date(log.createdAt).toLocaleString('id-ID')}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Input Catatan */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={noteInput}
+                    onChange={(e) => setNoteInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSendNote()}
+                    placeholder="Tulis catatan atau pesan ke divisi lain..."
+                    className="flex-1 border border-capo-line rounded-panel px-3 py-2 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-capo-navy"
+                  />
+                  <Button variant="accent" size="sm" onClick={handleSendNote} disabled={!noteInput.trim()}>
+                    <Send className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+
             </div>
           </div>
         )}

@@ -1,6 +1,12 @@
+"use client"
+
 import { Button } from "@/components/ui/Button"
+import { useLogout } from "@/hooks/useLogout"
+import { LogOut } from "lucide-react"
 
 export function StafDashboard({ user }: { user: any }) {
+  const { logout } = useLogout()
+
   return (
     <div className="flex-1 flex flex-col bg-capo-bg overflow-y-auto">
       <div className="bg-capo-navy p-4 rounded-b-panel text-white shadow-md flex justify-between items-start">
@@ -8,16 +14,12 @@ export function StafDashboard({ user }: { user: any }) {
           <h1 className="font-oswald text-xl">Halo, {user?.nama || 'Staf'}</h1>
           <p className="text-white/70 text-sm">Divisi: {user?.divisi || 'Produksi'}</p>
         </div>
-        <button 
-          onClick={async () => {
-            const { logoutUser } = await import("@/app/actions/auth")
-            await logoutUser()
-            window.location.href = "/"
-          }}
-          className="text-capo-danger hover:text-red-400 p-2"
+        <button
+          onClick={logout}
+          className="text-white/50 hover:text-capo-danger p-2 transition-colors"
           title="Logout"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          <LogOut className="w-5 h-5" />
         </button>
       </div>
 

@@ -6,6 +6,7 @@ import { KpiCard } from '@/components/ui/KpiCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { CurrencyInput } from '@/components/ui/CurrencyInput';
+import { API } from '@/lib/api';
 
 export default function KeuanganPage() {
   const [summary, setSummary] = useState({
@@ -30,9 +31,9 @@ export default function KeuanganPage() {
   const fetchFinanceData = async () => {
     try {
       const [sumRes, payRes, outRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}`}/finance/summary`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}`}/finance/payments`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}`}/finance/pengeluaran`)
+        fetch(`${API}/finance/summary`),
+        fetch(`${API}/finance/payments`),
+        fetch(`${API}/finance/pengeluaran`),
       ]);
       
       if (sumRes.ok) setSummary(await sumRes.json());
@@ -52,7 +53,7 @@ export default function KeuanganPage() {
   const handleAddPengeluaran = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}`}/finance/pengeluaran`, {
+      const res = await fetch(`${API}/finance/pengeluaran`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newPengeluaran)

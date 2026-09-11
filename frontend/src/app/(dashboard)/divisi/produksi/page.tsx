@@ -1,5 +1,7 @@
 "use client"
 
+import { API } from '@/lib/api';
+
 import * as React from "react"
 import { Topbar } from "@/components/layout/Topbar"
 import { KpiCard } from "@/components/ui/KpiCard"
@@ -14,7 +16,7 @@ export default function ProduksiOverviewPage() {
     // Simulasi fetch semua order atau kita bisa fetch per divisi jika endpoint all orders belum ada
     const fetchAllOrders = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders`)
+        const res = await fetch(`${API}/orders`)
         if (res.ok) {
           const data = await res.json()
           setOrders(data)

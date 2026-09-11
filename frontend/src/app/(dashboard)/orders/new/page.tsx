@@ -1,5 +1,7 @@
 "use client"
 
+import { API } from '@/lib/api';
+
 import * as React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -62,7 +64,7 @@ export default function NewOrderPage() {
     }
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders`, {
+      const response = await fetch(`${API}/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

@@ -14,17 +14,22 @@ import { UpdateOutputDto, ApproveOutputDto } from './dto/update-output.dto.js';
 export class ProductionService {
   constructor(private prisma: PrismaService) {}
 
-  // Daftar urutan alur produksi baku
+  // Alur produksi baku Capolista:
+  // DRAFT → DESAIN → PROCUREMENT → PRINTING → PEMASANGAN → CUTTING → JAHIT → PACKING → DIKIRIM → GUDANG → SELESAI
   private readonly alurProduksi: StatusOrder[] = [
     StatusOrder.DRAFT,
     StatusOrder.DESAIN,
-    StatusOrder.CUTTING,
-    StatusOrder.JAHIT,
+    StatusOrder.PROCUREMENT,
     StatusOrder.PRINTING,
     StatusOrder.PEMASANGAN,
+    StatusOrder.CUTTING,
+    StatusOrder.JAHIT,
+    StatusOrder.PACKING,
+    StatusOrder.DIKIRIM,
     StatusOrder.GUDANG,
     StatusOrder.SELESAI,
   ];
+
 
   async getKanbanBoard(divisiStatus: StatusOrder) {
     // Menampilkan order yang berada di status divisi tersebut
@@ -61,14 +66,28 @@ export class ProductionService {
     let nextIndex = currentIndex + 1;
     let nextStatus = this.alurProduksi[nextIndex];
 
-    // Logika Cerdas: Jika dari Jahit, dan skipPrinting = true (misal polos), langsung ke Pemasangan
-    if (order.status === StatusOrder.JAHIT && skipPrinting) {
-      nextStatus = StatusOrder.PEMASANGAN;
+    // Logika: Jika dari DESAIN dan bahan sudah ada (skipProcurement = true via skipPrinting flag),
+    // langsung ke PRINTING tanpa harus ke PROCUREMENT
+    if (order.status === StatusOrder.DESAIN && skipPrinting) {
+      nextStatus = StatusOrder.PRINTING;
     }
+
+    // Logika: Jika dari JAHIT dan produk tidak perlu QC lebih (langsung ke PACKING)
+    // Default tetap ke PACKING sesuai alur
 
     const updatedOrder = await this.prisma.order.update({
       where: { id: orderId },
-      data: { status: nextStatus },
+      data: { status: nextStatus, subStatus: null },
+    });
+
+    // Catat ke OrderLog untuk audit trail
+    await this.prisma.orderLog.create({
+      data: {
+        orderId,
+        type: 'STATUS_CHANGE',
+        title: `Status diperbarui ke ${nextStatus}`,
+        desc: `Dipindahkan dari ${order.status} → ${nextStatus}`,
+      },
     });
 
     return {
@@ -76,6 +95,7 @@ export class ProductionService {
       order: updatedOrder,
     };
   }
+
 
   async updateSubStatus(orderId: number, subStatus: string) {
     const order = await this.prisma.order.findUnique({

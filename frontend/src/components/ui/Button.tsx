@@ -14,13 +14,14 @@ const buttonVariants = cva(
         accent:
           "bg-capo-accent text-white hover:bg-capo-accent/90 shadow-sm",
         danger:
-          "bg-capo-danger text-white hover:bg-capo-danger/90 shadow-sm", // Only for real problems
+          "bg-capo-danger text-white hover:bg-capo-danger/90 shadow-sm", // Only for real problems (status merah = masalah)
         success:
-          "bg-green-600 text-white hover:bg-green-700 shadow-sm",
+          "bg-capo-accent/90 text-white hover:bg-capo-accent shadow-sm",
+        /** @deprecated Gunakan 'accent' atau 'default'. primary dihapus dari palet DS. */
         primary:
-          "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
+          "bg-capo-navy text-white hover:bg-capo-navy/80 shadow-sm",
         outline:
-          "border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-100",
+          "border border-capo-line bg-transparent text-capo-ink hover:bg-capo-line/20",
         ghost: "hover:bg-capo-line/20 text-capo-ink",
         link: "text-capo-navy underline-offset-4 hover:underline",
       },

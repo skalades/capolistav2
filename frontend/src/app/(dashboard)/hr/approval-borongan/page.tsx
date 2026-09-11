@@ -1,5 +1,7 @@
 "use client"
 
+import { API } from '@/lib/api';
+
 import * as React from "react"
 import { Topbar } from "@/components/layout/Topbar"
 import { Button } from "@/components/ui/Button"
@@ -10,7 +12,7 @@ export default function ApprovalBoronganPage() {
 
   const fetchApprovals = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/hr/pending-approvals`);
+      const res = await fetch(`${API}/hr/pending-approvals`);
       const data = await res.json();
       setApprovals(data);
     } catch (err) {
@@ -24,7 +26,7 @@ export default function ApprovalBoronganPage() {
 
   const handleApprove = async (id: number, pcsApproved: number, status: 'APPROVED' | 'REJECTED') => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/hr/approve-output/${id}`, {
+      await fetch(`${API}/hr/approve-output/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status, pcsApproved })

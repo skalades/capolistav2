@@ -21,6 +21,7 @@ model User {
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
   absensi              Absensi[]
+  absensiDicatat       Absensi[]              @relation("AbsensiDicatat")
   orders               Order[]                @relation("OrderCreatedBy")
   OrderLog             OrderLog[]
   penggajian           Penggajian[]
@@ -209,15 +210,19 @@ model StokOpname {
 }
 
 model Absensi {
-  id        Int         @id @default(autoincrement())
-  userId    Int
-  tanggal   DateTime    @default(now()) @db.Date
-  status    StatusAbsen
-  jamMasuk  DateTime?   @db.Time(6)
-  jamKeluar DateTime?   @db.Time(6)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  user      User        @relation(fields: [userId], references: [id])
+  id             Int         @id @default(autoincrement())
+  userId         Int
+  tanggal        DateTime    @default(now()) @db.Date
+  status         StatusAbsen
+  jamMasuk       DateTime?   @db.Time(6)
+  jamKeluar      DateTime?   @db.Time(6)
+  // ID user (Admin/Mandor) yang mencatat absensi ini — untuk audit trail
+  dicatatOlehId  Int?
+  catatan        String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  user           User        @relation(fields: [userId], references: [id])
+  dicatatOleh    User?       @relation("AbsensiDicatat", fields: [dicatatOlehId], references: [id])
 }
 
 model Penggajian {
@@ -326,10 +331,13 @@ enum TipeGaji {
 enum StatusOrder {
   DRAFT
   DESAIN
-  CUTTING
-  JAHIT
+  PROCUREMENT
   PRINTING
   PEMASANGAN
+  CUTTING
+  JAHIT
+  PACKING
+  DIKIRIM
   GUDANG
   SELESAI
 }

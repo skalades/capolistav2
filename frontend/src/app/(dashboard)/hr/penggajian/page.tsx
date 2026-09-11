@@ -1,5 +1,7 @@
 "use client"
 
+import { API } from '@/lib/api';
+
 import * as React from "react"
 import { Topbar } from "@/components/layout/Topbar"
 import { Button } from "@/components/ui/Button"
@@ -22,7 +24,7 @@ export default function PenggajianPage() {
   const fetchPenggajian = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/hr/penggajian`);
+      const res = await fetch(`${API}/hr/penggajian`);
       if (res.ok) {
         const data = await res.json();
         setPenggajianList(data);
@@ -47,7 +49,7 @@ export default function PenggajianPage() {
     
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/hr/penggajian/generate`, {
+      const res = await fetch(`${API}/hr/penggajian/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

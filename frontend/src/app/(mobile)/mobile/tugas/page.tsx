@@ -1,5 +1,7 @@
 "use client"
 
+import { API } from '@/lib/api';
+
 import * as React from "react"
 import { Topbar } from "@/components/layout/Topbar"
 import { Button } from "@/components/ui/Button"
@@ -13,7 +15,7 @@ export default function MobileTugasPage() {
 
   const fetchTasks = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/hr/mobile-tasks/${operatorId}`);
+      const res = await fetch(`${API}/hr/mobile-tasks/${operatorId}`);
       const json = await res.json();
       setData(json);
     } catch (err) {
@@ -28,7 +30,7 @@ export default function MobileTugasPage() {
   const handleSubmitOutput = async () => {
     if (!data?.activeTask || !pcsInput) return;
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/hr/submit-output`, {
+      await fetch(`${API}/hr/submit-output`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

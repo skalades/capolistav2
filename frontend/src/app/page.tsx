@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/app/actions/auth";
 import { getSettings } from "@/app/actions/settings";
+import { API } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,8 +41,7 @@ export default function LoginPage() {
 
   const getFullLogoUrl = (path: string) => {
     if (path.startsWith('http')) return path;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3005";
-    return `${baseUrl}${path}`;
+    return `${API}${path}`;
   };
 
   return (

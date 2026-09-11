@@ -1,4 +1,6 @@
 "use client";
+
+import { API } from '@/lib/api';
 import React, { useState, useEffect } from 'react';
 import { Topbar } from '@/components/layout/Topbar';
 import { Button } from '@/components/ui/Button';
@@ -6,7 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { KpiCard } from '@/components/ui/KpiCard';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}`}`;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || `${API}`}`;
 
 export default function GudangPage() {
   const [bahan, setBahan] = useState([]);

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Search, Package, MapPin, Calendar } from 'lucide-react';
 import TimelineItem from '@/components/tracking/TimelineItem';
+import { API } from '@/lib/api';
 
 interface OrderTrackingData {
   noOrder: string;
@@ -42,8 +43,7 @@ export default function TrackOrderPage() {
     setOrderData(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const res = await fetch(`${apiUrl}/orders/track/${noOrder.trim()}`);
+      const res = await fetch(`${API}/orders/track/${noOrder.trim()}`);
       
       if (!res.ok) {
         if (res.status === 404 || res.status === 400) {

@@ -1,5 +1,7 @@
 "use client"
 
+import { API } from '@/lib/api';
+
 import * as React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
@@ -17,7 +19,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
   
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders`)
+    fetch(`${API}/orders`)
       .then(res => res.json())
       .then(data => {
         setOrders(data)

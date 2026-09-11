@@ -14,13 +14,18 @@ export const API =
 
 /**
  * Helper fetch dengan base URL dan default headers.
- * Otomatis inject Authorization header jika ada token di cookie (client-side).
+ * Di server-side, ia menembak langsung ke BACKEND_URL (jangan lupa manual pasang header auth).
+ * Di client-side, ia menembak ke /api/proxy agar token cookie otomatis di-attach oleh Next.js server.
  */
 export async function apiFetch(
   path: string,
   options: RequestInit = {},
 ): Promise<Response> {
-  const url = `${API}${path}`;
+  const isClient = typeof window !== 'undefined';
+  const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+  
+  const url = isClient ? `/api/proxy/${cleanPath}` : `${API}/${cleanPath}`;
+  
   return fetch(url, {
     ...options,
     headers: {

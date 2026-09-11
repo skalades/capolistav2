@@ -6,6 +6,7 @@ import { Topbar } from "@/components/layout/Topbar"
 import { Button } from "@/components/ui/Button"
 import { CurrencyInput } from "@/components/ui/CurrencyInput"
 import { ArrowLeft, Save, Upload } from "lucide-react"
+import { apiFetch } from "@/lib/api"
 
 export default function EditOrderPage() {
   const router = useRouter()
@@ -45,7 +46,7 @@ export default function EditOrderPage() {
   React.useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders/${orderId}`)
+        const res = await apiFetch(`/orders/${orderId}`)
         if (res.ok) {
           const data = await res.json()
           
@@ -104,9 +105,8 @@ export default function EditOrderPage() {
         dp: Number(formData.dp),
       }
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders/${orderId}`, {
+      const response = await apiFetch(`/orders/${orderId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       })
       

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { Modal } from "@/components/ui/Modal"
 import { ArrowLeft, MessageSquare, Printer, CheckCircle2, Clock, Edit } from "lucide-react"
+import { apiFetch, API } from "@/lib/api"
 
 export default function OrderDetailPage() {
   const router = useRouter()
@@ -27,7 +28,7 @@ export default function OrderDetailPage() {
 
   const fetchOrder = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders/${orderId}`)
+      const res = await apiFetch(`/orders/${orderId}`)
       if (res.ok) {
         const data = await res.json()
         setOrder(data)
@@ -47,9 +48,8 @@ export default function OrderDetailPage() {
   const handleUpdateStatus = async () => {
     setIsSubmitting(true)
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders/${order.id}/status`, {
+      await apiFetch(`/orders/${order.id}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: selectedStatus, catatan: catatanStatus })
       })
       setStatusModalOpen(false)
@@ -65,9 +65,8 @@ export default function OrderDetailPage() {
     if (!chatMessage.trim()) return
     setIsSubmitting(true)
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders/${order.id}/logs`, {
+      await apiFetch(`/orders/${order.id}/logs`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: chatMessage })
       })
       setChatMessage("")
@@ -110,14 +109,14 @@ export default function OrderDetailPage() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders/${order.id}/invoice`, '_blank')}
+                onClick={() => window.open(`${API}/orders/${order.id}/invoice`, '_blank')}
               >
                 <Printer className="w-4 h-4 mr-2" /> Invoice
               </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/orders/${order.id}/receipt`, '_blank')}
+                onClick={() => window.open(`${API}/orders/${order.id}/receipt`, '_blank')}
               >
                 <Printer className="w-4 h-4 mr-2" /> Kwitansi
               </Button>

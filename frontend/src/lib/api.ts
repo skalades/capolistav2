@@ -10,7 +10,7 @@ export const API =
     ? process.env.INTERNAL_API_URL
     : undefined) ||
   process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:3000';
+  'http://127.0.0.1:3005';
 
 /**
  * Helper fetch dengan base URL dan default headers.

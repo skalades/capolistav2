@@ -1,6 +1,6 @@
 "use client"
 
-import { API } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 
 import * as React from "react"
 import { Topbar } from "@/components/layout/Topbar"
@@ -24,7 +24,7 @@ export default function DesainPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${API}/production/board/DESAIN`)
+      const res = await apiFetch(`/production/board/DESAIN`)
       const data = await res.json()
       const formatted = data.map((order: any) => {
         const totalPcs = order.items.reduce((acc: number, item: any) => acc + item.jumlahPcs, 0)
@@ -52,7 +52,7 @@ export default function DesainPage() {
   // Fetch Desain detail whenever activeCard changes
   React.useEffect(() => {
     if (activeCard) {
-      fetch(`${API}/production/desain/${activeCard.id}`)
+      apiFetch(`/production/desain/${activeCard.id}`)
         .then(res => res.json())
         .then(data => {
           setDesainData(data)
@@ -69,7 +69,7 @@ export default function DesainPage() {
   const handleUpdateSubStatus = async (newStage: string) => {
     if (!activeCard) return
     try {
-      await fetch(`${API}/production/order/${activeCard.id}/substatus`, {
+      await apiFetch(`/production/order/${activeCard.id}/substatus`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subStatus: newStage })
@@ -84,7 +84,7 @@ export default function DesainPage() {
   const handleNextStage = async () => {
     if (!activeCard) return
     try {
-      await fetch(`${API}/production/order/${activeCard.id}/next-stage`, {
+      await apiFetch(`/production/order/${activeCard.id}/next-stage`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ skipPrinting: false })
@@ -100,7 +100,7 @@ export default function DesainPage() {
     if (!activeCard) return
     setIsUpdating(true)
     try {
-      await fetch(`${API}/production/desain/${activeCard.id}`, {
+      await apiFetch(`/production/desain/${activeCard.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -110,7 +110,7 @@ export default function DesainPage() {
         })
       })
       // refresh data
-      const res = await fetch(`${API}/production/desain/${activeCard.id}`)
+      const res = await apiFetch(`/production/desain/${activeCard.id}`)
       const data = await res.json()
       setDesainData(data)
       alert("Desain berhasil disimpan (Versi ditingkatkan)")
@@ -125,12 +125,12 @@ export default function DesainPage() {
     if (!activeCard) return
     setIsUpdating(true)
     try {
-      await fetch(`${API}/production/desain/${activeCard.id}/approve`, {
+      await apiFetch(`/production/desain/${activeCard.id}/approve`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status })
       })
-      const res = await fetch(`${API}/production/desain/${activeCard.id}`)
+      const res = await apiFetch(`/production/desain/${activeCard.id}`)
       const data = await res.json()
       setDesainData(data)
       

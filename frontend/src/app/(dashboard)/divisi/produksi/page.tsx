@@ -1,6 +1,6 @@
 "use client"
 
-import { API } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 
 import * as React from "react"
 import { Topbar } from "@/components/layout/Topbar"
@@ -16,7 +16,7 @@ export default function ProduksiOverviewPage() {
     // Simulasi fetch semua order atau kita bisa fetch per divisi jika endpoint all orders belum ada
     const fetchAllOrders = async () => {
       try {
-        const res = await fetch(`${API}/orders`)
+        const res = await apiFetch(`/orders`)
         if (res.ok) {
           const data = await res.json()
           setOrders(data)

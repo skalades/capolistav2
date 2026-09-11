@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { API } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 import { Users, Plus, Search, Edit2 } from 'lucide-react';
 
 // ─────────────────────────────────────────
@@ -66,10 +66,15 @@ export default function KaryawanPage() {
     try {
       const params = new URLSearchParams();
       if (divisiFilter) params.set('divisi', divisiFilter);
-      const res = await fetch(`${API}/hr/karyawan?${params.toString()}`);
-      if (res.ok) setKaryawanList(await res.json());
+      const res = await apiFetch(`/hr/karyawan?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) setKaryawanList(data);
+        else setKaryawanList([]);
+      }
     } catch (err) {
       console.error('Gagal fetch karyawan', err);
+      setKaryawanList([]);
     } finally {
       setLoading(false);
     }
@@ -115,12 +120,11 @@ export default function KaryawanPage() {
       };
       if (form.password) payload.password = form.password;
 
-      const url = editTarget ? `${API}/users/${editTarget.id}` : `${API}/users`;
+      const url = editTarget ? `/users/${editTarget.id}` : `/users`;
       const method = editTarget ? 'PATCH' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 

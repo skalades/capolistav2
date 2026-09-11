@@ -1,6 +1,6 @@
 "use client"
 
-import { API } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 
 import * as React from "react"
 import { Topbar } from "@/components/layout/Topbar"
@@ -27,7 +27,7 @@ export default function CuttingPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${API}/production/board/CUTTING`)
+      const res = await apiFetch(`/production/board/CUTTING`)
       const data = await res.json()
       const formatted = data.map((order: any) => {
         const totalPcs = order.items.reduce((acc: number, item: any) => acc + item.jumlahPcs, 0)
@@ -50,7 +50,7 @@ export default function CuttingPage() {
 
   const fetchOperators = async () => {
     try {
-      const res = await fetch(`${API}/hr/operators/CUTTING`)
+      const res = await apiFetch(`/hr/operators/CUTTING`)
       const data = await res.json()
       setOperators(data)
     } catch (err) {
@@ -65,7 +65,7 @@ export default function CuttingPage() {
 
   React.useEffect(() => {
     if (activeCard) {
-      fetch(`${API}/production/cutting/${activeCard.id}`)
+      apiFetch(`/production/cutting/${activeCard.id}`)
         .then(res => res.json())
         .then(data => {
           setCuttingData(data)
@@ -82,7 +82,7 @@ export default function CuttingPage() {
   const handleUpdateSubStatus = async (newStage: string) => {
     if (!activeCard) return
     try {
-      await fetch(`${API}/production/order/${activeCard.id}/substatus`, {
+      await apiFetch(`/production/order/${activeCard.id}/substatus`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subStatus: newStage })
@@ -97,7 +97,7 @@ export default function CuttingPage() {
   const handleNextStage = async () => {
     if (!activeCard) return
     try {
-      await fetch(`${API}/production/order/${activeCard.id}/next-stage`, {
+      await apiFetch(`/production/order/${activeCard.id}/next-stage`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ skipPrinting: false })
@@ -121,7 +121,7 @@ export default function CuttingPage() {
         parsedPcs = { info: pcsInfo }
       }
 
-      await fetch(`${API}/production/cutting/${activeCard.id}`, {
+      await apiFetch(`/production/cutting/${activeCard.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -131,7 +131,7 @@ export default function CuttingPage() {
         })
       })
       
-      const res = await fetch(`${API}/production/cutting/${activeCard.id}`)
+      const res = await apiFetch(`/production/cutting/${activeCard.id}`)
       const data = await res.json()
       setCuttingData(data)
       alert("Data pemotongan berhasil disimpan")

@@ -21,7 +21,7 @@ export default function JahitPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${API}/production/board/JAHIT`)
+      const res = await apiFetch(`/production/board/JAHIT`)
       const data = await res.json()
       const formatted = data.map((order: any) => {
         const totalPcs = order.items.reduce((acc: number, item: any) => acc + item.jumlahPcs, 0)
@@ -55,7 +55,7 @@ export default function JahitPage() {
 
   const fetchOperators = async () => {
     try {
-      const res = await fetch(`${API}/hr/operators/JAHIT`)
+      const res = await apiFetch(`/hr/operators/JAHIT`)
       const data = await res.json()
       setOperators(data)
     } catch (err) {
@@ -65,7 +65,7 @@ export default function JahitPage() {
 
   const fetchLogs = async (orderId: string) => {
     try {
-      const res = await fetch(`${API}/orders/${orderId}/logs`)
+      const res = await apiFetch(`/orders/${orderId}/logs`)
       if (res.ok) setOrderLogs(await res.json())
     } catch (err) {
       console.error("Failed to fetch logs", err)
@@ -81,7 +81,7 @@ export default function JahitPage() {
   const handleSendNote = async () => {
     if (!activeCard || !noteInput.trim()) return
     try {
-      await fetch(`${API}/orders/${activeCard.id}/logs`, {
+      await apiFetch(`/orders/${activeCard.id}/logs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'CATATAN', title: 'Catatan Divisi Jahit', desc: noteInput.trim() }),
@@ -102,7 +102,7 @@ export default function JahitPage() {
   const handleUpdateSubStatus = async (newStage: string) => {
     if (!activeCard) return
     try {
-      await fetch(`${API}/production/order/${activeCard.id}/substatus`, {
+      await apiFetch(`/production/order/${activeCard.id}/substatus`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subStatus: newStage })
@@ -117,7 +117,7 @@ export default function JahitPage() {
   const handleNextStage = async () => {
     if (!activeCard) return
     try {
-      await fetch(`${API}/production/order/${activeCard.id}/next-stage`, {
+      await apiFetch(`/production/order/${activeCard.id}/next-stage`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ skipPrinting: false })
@@ -201,7 +201,7 @@ export default function JahitPage() {
                     if (!opId || !tarif) return;
                     
                     try {
-                      await fetch(`${API}/hr/assign-operator`, {
+                      await apiFetch(`/hr/assign-operator`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({

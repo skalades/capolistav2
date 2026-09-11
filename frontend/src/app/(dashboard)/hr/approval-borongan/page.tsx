@@ -1,6 +1,6 @@
 "use client"
 
-import { API } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 
 import * as React from "react"
 import { Topbar } from "@/components/layout/Topbar"
@@ -12,11 +12,17 @@ export default function ApprovalBoronganPage() {
 
   const fetchApprovals = async () => {
     try {
-      const res = await fetch(`${API}/hr/pending-approvals`);
+      const res = await apiFetch(`/hr/pending-approvals`);
+      if (!res.ok) throw new Error("Gagal load data");
       const data = await res.json();
-      setApprovals(data);
+      if (Array.isArray(data)) {
+        setApprovals(data);
+      } else {
+        setApprovals([]);
+      }
     } catch (err) {
       console.error("Gagal menarik data approval", err);
+      setApprovals([]);
     }
   };
 
@@ -26,9 +32,8 @@ export default function ApprovalBoronganPage() {
 
   const handleApprove = async (id: number, pcsApproved: number, status: 'APPROVED' | 'REJECTED') => {
     try {
-      await fetch(`${API}/hr/approve-output/${id}`, {
+      await apiFetch(`/hr/approve-output/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status, pcsApproved })
       });
       fetchApprovals();

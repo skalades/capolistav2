@@ -1,6 +1,6 @@
 "use client"
 
-import { API } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 
 import * as React from "react"
 import { Topbar } from "@/components/layout/Topbar"
@@ -25,7 +25,7 @@ export default function PemasanganPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${API}/production/board/PEMASANGAN`)
+      const res = await apiFetch(`/production/board/PEMASANGAN`)
       const data = await res.json()
       const formatted = data.map((order: any) => {
         const totalPcs = order.items?.reduce((acc: number, item: any) => acc + item.jumlahPcs, 0) || 0
@@ -52,7 +52,7 @@ export default function PemasanganPage() {
 
   React.useEffect(() => {
     if (activeCard) {
-      fetch(`${API}/production/pemasangan/${activeCard.id}`)
+      apiFetch(`/production/pemasangan/${activeCard.id}`)
         .then(res => {
           if (!res.ok) throw new Error("Data not found")
           return res.json()
@@ -76,7 +76,7 @@ export default function PemasanganPage() {
   const handleUpdateSubStatus = async (newStage: string) => {
     if (!activeCard) return
     try {
-      await fetch(`${API}/production/order/${activeCard.id}/substatus`, {
+      await apiFetch(`/production/order/${activeCard.id}/substatus`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subStatus: newStage })
@@ -91,7 +91,7 @@ export default function PemasanganPage() {
   const handleNextStage = async () => {
     if (!activeCard) return
     try {
-      await fetch(`${API}/production/order/${activeCard.id}/next-stage`, {
+      await apiFetch(`/production/order/${activeCard.id}/next-stage`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
       })
@@ -115,7 +115,7 @@ export default function PemasanganPage() {
         // use as string if not valid JSON
       }
 
-      await fetch(`${API}/production/pemasangan/${activeCard.id}`, {
+      await apiFetch(`/production/pemasangan/${activeCard.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -124,7 +124,7 @@ export default function PemasanganPage() {
         })
       })
       
-      const res = await fetch(`${API}/production/pemasangan/${activeCard.id}`)
+      const res = await apiFetch(`/production/pemasangan/${activeCard.id}`)
       if (res.ok) {
         const data = await res.json()
         setPemasanganData(data)

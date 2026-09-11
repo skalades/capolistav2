@@ -6,7 +6,7 @@ import { KpiCard } from '@/components/ui/KpiCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { CurrencyInput } from '@/components/ui/CurrencyInput';
-import { API } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 
 export default function KeuanganPage() {
   const [summary, setSummary] = useState({
@@ -31,9 +31,9 @@ export default function KeuanganPage() {
   const fetchFinanceData = async () => {
     try {
       const [sumRes, payRes, outRes] = await Promise.all([
-        fetch(`${API}/finance/summary`),
-        fetch(`${API}/finance/payments`),
-        fetch(`${API}/finance/pengeluaran`),
+        apiFetch(`/finance/summary`),
+        apiFetch(`/finance/payments`),
+        apiFetch(`/finance/pengeluaran`),
       ]);
       
       if (sumRes.ok) setSummary(await sumRes.json());
@@ -53,7 +53,7 @@ export default function KeuanganPage() {
   const handleAddPengeluaran = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${API}/finance/pengeluaran`, {
+      const res = await apiFetch(`/finance/pengeluaran`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newPengeluaran)

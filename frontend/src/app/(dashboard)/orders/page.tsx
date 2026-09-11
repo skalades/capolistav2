@@ -1,6 +1,6 @@
 "use client"
 
-import { API } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 
 import * as React from "react"
 import { useState, useEffect } from "react"
@@ -19,7 +19,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
   
   useEffect(() => {
-    fetch(`${API}/orders`)
+    apiFetch(`/orders`)
       .then(res => res.json())
       .then(data => {
         setOrders(data)

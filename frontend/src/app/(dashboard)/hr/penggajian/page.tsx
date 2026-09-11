@@ -1,6 +1,6 @@
 "use client"
 
-import { API } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 
 import * as React from "react"
 import { Topbar } from "@/components/layout/Topbar"
@@ -24,13 +24,18 @@ export default function PenggajianPage() {
   const fetchPenggajian = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/hr/penggajian`);
+      const res = await apiFetch(`/hr/penggajian`);
       if (res.ok) {
         const data = await res.json();
-        setPenggajianList(data);
+        if (Array.isArray(data)) {
+          setPenggajianList(data);
+        } else {
+          setPenggajianList([]);
+        }
       }
     } catch (err) {
       console.error("Gagal menarik data penggajian", err);
+      setPenggajianList([]);
     } finally {
       setLoading(false);
     }
@@ -49,9 +54,8 @@ export default function PenggajianPage() {
     
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${API}/hr/penggajian/generate`, {
+      const res = await apiFetch(`/hr/penggajian/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: Number(generateUserId),
           periodeBulan: Number(generateBulan),

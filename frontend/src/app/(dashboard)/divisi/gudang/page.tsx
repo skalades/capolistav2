@@ -1,6 +1,6 @@
 "use client";
 
-import { API } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 import React, { useState, useEffect } from 'react';
 import { Topbar } from '@/components/layout/Topbar';
 import { Button } from '@/components/ui/Button';

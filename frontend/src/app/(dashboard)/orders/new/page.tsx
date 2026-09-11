@@ -1,6 +1,6 @@
 "use client"
 
-import { API } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 
 import * as React from "react"
 import { useState, useEffect } from "react"
@@ -64,7 +64,7 @@ export default function NewOrderPage() {
     }
 
     try {
-      const response = await fetch(`${API}/orders`, {
+      const response = await apiFetch(`/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

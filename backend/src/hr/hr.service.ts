@@ -248,7 +248,7 @@ export class HrService {
     return await this.prisma.tarifBoronganHistory.findMany({
       where: whereClause,
       include: { user: true },
-      orderBy: { berlakuMulai: 'desc' },
+      orderBy: { tanggalEfektif: 'desc' },
     });
   }
 

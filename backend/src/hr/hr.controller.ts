@@ -129,4 +129,24 @@ export class HrController {
   async getTarifBoronganHistoryByUser(@Param('userId') userId: string) {
     return await this.hrService.getTarifBoronganHistory(Number(userId));
   }
+
+  // =====================
+  // KARYAWAN & BULK ABSENSI
+  // =====================
+  @Get('karyawan')
+  async getKaryawan() {
+    return await this.hrService.getKaryawan();
+  }
+
+  @Post('absensi/bulk')
+  async createBulkAbsensi(
+    @Body()
+    body: {
+      tanggal: string;
+      records: Array<{ userId: number; status: any; jamMasuk?: string; jamKeluar?: string; catatan?: string }>;
+      dicatatOlehId?: number;
+    },
+  ) {
+    return await this.hrService.createBulkAbsensi(body);
+  }
 }

@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "api.nadirlabs.net",
+      },
+      {
+        protocol: "https",
         hostname: "cpa.nadirlabs.net",
       },
       {

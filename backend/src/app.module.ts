@@ -12,6 +12,7 @@ import { FinanceModule } from './finance/finance.module.js';
 import { SettingsModule } from './settings/settings.module.js';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { DashboardModule } from './dashboard/dashboard.module.js';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { join } from 'path';
       rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
     }),
-    AuthModule, UsersModule, OrdersModule, ProductionModule, HrModule, InventoryModule, FinanceModule, SettingsModule
+    AuthModule, UsersModule, OrdersModule, ProductionModule, HrModule, InventoryModule, FinanceModule, SettingsModule, DashboardModule
   ],
   controllers: [AppController],
   providers: [AppService],

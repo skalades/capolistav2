@@ -147,6 +147,8 @@ export class HrService {
     status: any;
     jamMasuk?: string;
     jamKeluar?: string;
+    dicatatOlehId?: number;
+    catatan?: string;
   }) {
     return await this.prisma.absensi.create({
       data: {
@@ -155,13 +157,33 @@ export class HrService {
         status: data.status,
         jamMasuk: data.jamMasuk ? new Date(data.jamMasuk) : null,
         jamKeluar: data.jamKeluar ? new Date(data.jamKeluar) : null,
+        dicatatOlehId: data.dicatatOlehId,
+        catatan: data.catatan,
       },
     });
   }
 
-  async getAbsensi() {
+  async getAbsensi(tanggal?: string, bulan?: number, tahun?: number) {
+    const whereClause: any = {};
+    if (tanggal) {
+      const date = new Date(tanggal);
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+      whereClause.tanggal = { gte: startOfDay, lte: endOfDay };
+    } else if (bulan && tahun) {
+      const startDate = new Date(tahun, bulan - 1, 1);
+      const endDate = new Date(tahun, bulan, 0, 23, 59, 59, 999);
+      whereClause.tanggal = { gte: startDate, lte: endDate };
+    }
+
     return await this.prisma.absensi.findMany({
-      include: { user: true },
+      where: whereClause,
+      include: {
+        user: { select: { id: true, nama: true, divisi: true } },
+        dicatatOleh: { select: { id: true, nama: true } },
+      },
       orderBy: { tanggal: 'desc' },
     });
   }
@@ -315,5 +337,44 @@ export class HrService {
     }
 
     return results;
+  }
+
+  async getRekapAbsensi(bulan: number, tahun: number) {
+    const startDate = new Date(tahun, bulan - 1, 1);
+    const endDate = new Date(tahun, bulan, 0, 23, 59, 59, 999);
+
+    const data = await this.prisma.absensi.findMany({
+      where: {
+        tanggal: { gte: startDate, lte: endDate },
+      },
+      include: {
+        user: { select: { id: true, nama: true, divisi: true } },
+      },
+    });
+
+    // Grouping manually in JS
+    const rekapMap = new Map<number, any>();
+    
+    data.forEach(item => {
+      if (!rekapMap.has(item.userId)) {
+        rekapMap.set(item.userId, {
+          userId: item.userId,
+          nama: item.user?.nama || 'Unknown',
+          divisi: item.user?.divisi || '-',
+          HADIR: 0,
+          SAKIT: 0,
+          IZIN: 0,
+          ALPA: 0,
+        });
+      }
+      
+      const record = rekapMap.get(item.userId);
+      if (item.status === 'HADIR') record.HADIR++;
+      else if (item.status === 'SAKIT') record.SAKIT++;
+      else if (item.status === 'IZIN') record.IZIN++;
+      else if (item.status === 'ALPA') record.ALPA++;
+    });
+
+    return Array.from(rekapMap.values()).sort((a, b) => a.nama.localeCompare(b.nama));
   }
 }

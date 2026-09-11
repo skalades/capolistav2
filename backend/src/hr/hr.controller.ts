@@ -7,9 +7,14 @@ import {
   Put,
   Delete,
   Patch,
+  UseGuards,
+  Request,
+  Query,
 } from '@nestjs/common';
 import { HrService } from './hr.service.js';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 
+@UseGuards(JwtAuthGuard)
 @Controller('hr')
 export class HrController {
   constructor(private readonly hrService: HrService) {}
@@ -48,7 +53,8 @@ export class HrController {
   @Patch('approve-output/:id')
   async approveOutput(
     @Param('id') id: string,
-    @Body() body: { status: 'APPROVED' | 'REJECTED'; pcsApproved: number; catatanMandor?: string }
+    @Body() body: { status: 'APPROVED' | 'REJECTED'; pcsApproved: number; catatanMandor?: string },
+    @Request() req: any
   ) {
     return await this.hrService.approveOutput(Number(id), body.status, body.pcsApproved, body.catatanMandor);
   }
@@ -65,15 +71,22 @@ export class HrController {
       status: any;
       jamMasuk?: string;
       jamKeluar?: string;
+      catatan?: string;
     },
+    @Request() req: any
   ) {
-    return await this.hrService.createAbsensi(body);
+    return await this.hrService.createAbsensi({ ...body, dicatatOlehId: req.user.id });
   }
 
   @Get('absensi')
-  async getAbsensi() {
-    return await this.hrService.getAbsensi();
+  async getAbsensi(
+    @Query('tanggal') tanggal?: string,
+    @Query('bulan') bulan?: string,
+    @Query('tahun') tahun?: string,
+  ) {
+    return await this.hrService.getAbsensi(tanggal, bulan ? Number(bulan) : undefined, tahun ? Number(tahun) : undefined);
   }
+
 
   // =====================
   // PENGGAJIAN
@@ -143,9 +156,20 @@ export class HrController {
     @Body()
     body: {
       entries: Array<{ userId: number; tanggal: string; status: any; jamMasuk?: string; jamKeluar?: string; catatan?: string }>;
-      dicatatOlehId?: number;
     },
+    @Request() req: any
   ) {
-    return await this.hrService.createBulkAbsensi(body);
+    return await this.hrService.createBulkAbsensi({
+      entries: body.entries,
+      dicatatOlehId: req.user.id,
+    });
+  }
+
+  @Get('absensi/rekap')
+  async getRekapAbsensi(
+    @Query('bulan') bulan: string,
+    @Query('tahun') tahun: string,
+  ) {
+    return await this.hrService.getRekapAbsensi(Number(bulan), Number(tahun));
   }
 }

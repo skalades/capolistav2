@@ -142,8 +142,7 @@ export class HrController {
   async createBulkAbsensi(
     @Body()
     body: {
-      tanggal: string;
-      records: Array<{ userId: number; status: any; jamMasuk?: string; jamKeluar?: string; catatan?: string }>;
+      entries: Array<{ userId: number; tanggal: string; status: any; jamMasuk?: string; jamKeluar?: string; catatan?: string }>;
       dicatatOlehId?: number;
     },
   ) {

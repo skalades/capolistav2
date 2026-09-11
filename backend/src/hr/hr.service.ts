@@ -271,16 +271,12 @@ export class HrService {
   }
 
   async createBulkAbsensi(data: {
-    tanggal: string;
-    records: Array<{ userId: number; status: any; jamMasuk?: string; jamKeluar?: string; catatan?: string }>;
+    entries: Array<{ userId: number; tanggal: string; status: any; jamMasuk?: string; jamKeluar?: string; catatan?: string }>;
     dicatatOlehId?: number;
   }) {
-    const tanggalDate = new Date(data.tanggal);
-    
-    // Process one by one using upsert (if exists for that user and date, update it, else create)
     const results = [];
-    for (const record of data.records) {
-      // Set to midnight to avoid time zone issues for comparison
+    for (const record of data.entries) {
+      const tanggalDate = new Date(record.tanggal);
       const startOfDay = new Date(tanggalDate);
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date(tanggalDate);
@@ -300,8 +296,8 @@ export class HrService {
         userId: record.userId,
         tanggal: tanggalDate,
         status: record.status,
-        jamMasuk: record.jamMasuk ? new Date(`${data.tanggal}T${record.jamMasuk}:00Z`) : null,
-        jamKeluar: record.jamKeluar ? new Date(`${data.tanggal}T${record.jamKeluar}:00Z`) : null,
+        jamMasuk: record.jamMasuk ? new Date(`${record.tanggal}T${record.jamMasuk}:00Z`) : null,
+        jamKeluar: record.jamKeluar ? new Date(`${record.tanggal}T${record.jamKeluar}:00Z`) : null,
         dicatatOlehId: data.dicatatOlehId,
         catatan: record.catatan,
       };

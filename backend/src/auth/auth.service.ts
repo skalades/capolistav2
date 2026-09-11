@@ -38,7 +38,8 @@ export class AuthService {
     // Generate JWT
     const payload = { 
       sub: user.id, 
-      email: user.email, 
+      email: user.email,
+      nama: user.nama,
       role: user.role,
       divisi: user.divisi,
       levelAkses: user.levelAkses

@@ -251,6 +251,7 @@ function isItemVisible(item: NavItem, user: SidebarUser): boolean {
 
 // Initial "letter" avatar dari nama user
 function getInitials(nama: string): string {
+  if (!nama) return "U";
   return nama
     .split(" ")
     .map((w) => w[0])

@@ -3,9 +3,10 @@ import { cookies } from 'next/headers';
 
 const BACKEND_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3005';
 
-export async function ANY(req: NextRequest, { params }: { params: { path: string[] } }) {
+export async function ANY(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   try {
-    const path = (await params).path.join('/');
+    const resolvedParams = await params;
+    const path = resolvedParams.path.join('/');
     const searchParams = req.nextUrl.search;
     
     const cookieStore = await cookies();

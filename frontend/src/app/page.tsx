@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/app/actions/auth";
 import { getSettings } from "@/app/actions/settings";
-import { API } from "@/lib/api";
+import { apiFetch, API } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();

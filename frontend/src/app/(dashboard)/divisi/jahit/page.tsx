@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button"
 import { Modal } from "@/components/ui/Modal"
 import { CurrencyInput } from "@/components/ui/CurrencyInput"
 import { CheckSquare, Send, User, X } from "lucide-react"
-import { API } from "@/lib/api"
+import { apiFetch } from "@/lib/api"
 
 const STAGES = ["Menunggu", "Sedang Dijahit", "QC", "Selesai"]
 

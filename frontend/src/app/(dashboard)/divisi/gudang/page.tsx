@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { KpiCard } from '@/components/ui/KpiCard';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || `${API}`}`;
+
 
 export default function GudangPage() {
   const [bahan, setBahan] = useState([]);
@@ -17,9 +17,9 @@ export default function GudangPage() {
   const [stokFisik, setStokFisik] = useState('');
   const [catatan, setCatatan] = useState('');
 
-  const fetchBahan = async () => {
+const fetchBahan = async () => {
     try {
-      const res = await fetch(`${API_URL}/inventory/bahan`);
+      const res = await apiFetch(`/inventory/bahan`);
       const data = await res.json();
       setBahan(data);
     } catch (err) {
@@ -33,9 +33,8 @@ export default function GudangPage() {
 
   const handleOpnameSubmit = async () => {
     try {
-      await fetch(`${API_URL}/inventory/opname`, {
+      await apiFetch(`/inventory/opname`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           bahanId: Number(selectedBahanId),
           stokFisik: Number(stokFisik),
